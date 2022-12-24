@@ -1,0 +1,39 @@
+{
+  "name": "JojoCom",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "JojoCombatScripts": {
+        "$className": "Folder",
+        "$path": "src/shared",
+
+        "Dependencies": {
+          "$className": "Folder",
+          "$path": "Packages",
+          "$ignoreUnknownInstances": true
+        },
+        "clientScripts": {
+          "$className": "Folder",
+          "$path": "src/client"
+        },
+        "serverScripts": {
+          "$className": "Folder",
+          "$path": "src/server"
+        }
+    }},
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "src/live/client"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "src/live/server"
+    }
+  }
+}
