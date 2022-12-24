@@ -15,13 +15,11 @@ init.__root = game:GetService("ReplicatedStorage"):FindFirstChild("JojoCombatScr
 assert(init.__root, "Couldn't find root folder for the system, please ensure that the system folder is located in Replicated Storage");
 init.Events = require(script.Parent.EventsHandler);
 init.Data = require(script.Parent.Data)
-init.StandsData = require(script.Parent.StandsData);
 
 local RS = game:GetService"RunService";
 local AnimMod = require(script.Parent.Dependencies.AnimController);
 local Events = init.Events;
 local Data = init.Data;
-local StandsData = init.StandsData;
 
 --[=[
     @within Main
@@ -80,7 +78,8 @@ if RS:IsServer() then
         Summons a Stand and automatically tells the player to initiate and control it
     ]=]
     function init.SummonStand(Player:Player, Stand:string)
-        local Model = StandsData[Stand].Model;
+        local StandData = require(init.__root.Stands:FindFirstChild(Stand).StandData);
+        local Model = StandData.Model
         assert(Model.PrimaryPart, "Please specify a primary part of a Stand");
         Model.Archivable = true;
         local StandClone = Model:Clone();
@@ -90,8 +89,8 @@ if RS:IsServer() then
         local PlayerData = Data.getPlayerData(Player);
         PlayerData.Stand.Model = StandClone;
         PlayerData.Stand.Original = Model;
-        PlayerData.Stand.Abilities = StandsData[Stand].Abilities;
-        PlayerData.Stand.Finisher = StandsData[Stand].Finisher;
+        PlayerData.Stand.Abilities = StandData.Abilities;
+        PlayerData.Stand.Finisher = StandData.Finisher;
         --StandClone.Name = "JoJoStand";
         StandClone.Parent = Player.Character or Player.CharacterAdded:Wait();
         if not Player.Character:IsDescendantOf(workspace) then
@@ -253,10 +252,10 @@ do
         Events.RegisterEvent("FinisherFinale");
     elseif (RS:IsClient()) then
         game.Players.LocalPlayer.CharacterAdded:Connect(function()
-            init.CharAnim = initAnimControl();
+            _G.CharAnim = initAnimControl();
         end)
         if game.Players.LocalPlayer.Character then
-            init.CharAnim = initAnimControl();
+            _G.CharAnim = initAnimControl();
         end
 
         task.delay(0, clonePlayerScripts);

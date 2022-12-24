@@ -9,6 +9,7 @@ stand.__index = stand;
 
 local AnimMod = require(game.ReplicatedStorage.JojoCombatScripts.Dependencies.AnimController);
 local RS = game:GetService"RunService";
+local Player = game.Players.LocalPlayer;
 
 function stand.new(Stand:Model, Anims:AnimMod.animList, PrimaryPart:Part?)
     local self = setmetatable({
@@ -33,7 +34,7 @@ function stand:__update()
     assert(self.__stand.PrimaryPart, "Please specify the primary part of the Stand model");
     while self do
         if self.__idle then
-            self.__stand.PrimaryPart.CFrame = (self.__primaryPart and self.__primaryPart.CFrame or game.Players.LocalPlayer.Character.PrimaryPart.CFrame) * CFrame.new(2.5, 2.5, 3);
+            self.__stand.PrimaryPart.CFrame = (self.__primaryPart and self.__primaryPart.CFrame or Player.Character.PrimaryPart.CFrame) * CFrame.new(2.5, 2.5, 3);
         end
         RS.Heartbeat:Wait();
     end

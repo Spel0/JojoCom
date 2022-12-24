@@ -3,7 +3,6 @@ local RS = game:GetService"ReplicatedStorage";
 local RSRootFolder = RS:WaitForChild"JojoCombatScripts";
 local EventsFolder = RSRootFolder:WaitForChild("Events");
 local StandMod = require(RSRootFolder.Stand);
-local StandsData = require(RSRootFolder.StandsData);
 
 local function PackToAnimList(Table)
     local toReturn = {};
@@ -22,7 +21,7 @@ EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boo
     if _G.JojoCombatScripts.Stand ~= nil then
         _G.JojoCombatScripts.Stand:Destroy();
     end
-    _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(StandsData[Name]["Anims"]), char:WaitForChild("HumanoidRootPart")) or nil;
+    _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(require(RSRootFolder.Stands:FindFirstChild(Name).StandData)["Anims"]), char:WaitForChild("HumanoidRootPart")) or nil;
 end)
 
 repeat task.wait() until _G.JojoCombatScripts ~= nil

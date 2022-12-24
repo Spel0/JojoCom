@@ -16,13 +16,12 @@ end)--]]
 
 _G.JojoCombatScripts = require(RSRootFolder.JojoCombatMod);
 _G.JojoCombatScripts.Events = require(RSRootFolder.EventsHandler);
-_G.JojoCombatScripts.StandsData = require(RSRootFolder.StandsData);
 
 local function onCharacterAdded(char)
     char:WaitForChild("Humanoid").Died:Connect(function()
         local anim;
         if not Player:GetAttribute("SpecialDeath") then
-            anim = _G.JojoCombatScripts.CharAnim:PlayAnim("Death");
+            anim = _G.CharAnim:PlayAnim("Death");
         end
         if _G.JojoCombatScripts.Stand ~= nil then
             _G.JojoCombatScripts.Stand:SetIdle(false);
