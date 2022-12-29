@@ -21,7 +21,15 @@ EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boo
     if _G.JojoCombatScripts.Stand ~= nil then
         _G.JojoCombatScripts.Stand:Destroy();
     end
-    _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(require(RSRootFolder.Stands:FindFirstChild(Name).StandData)["Anims"]), char:WaitForChild("HumanoidRootPart")) or nil;
+    local hoverOffset:CFrame;
+    if Name == "The World" then
+        hoverOffset = CFrame.new(2, 1, 2);
+    end
+    _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(require(RSRootFolder.Stands:FindFirstChild(Name).StandData)["Anims"]), hoverOffset, char:WaitForChild("HumanoidRootPart")) or nil;
+end)
+
+EventsFolder:WaitForChild("Attack").OnClientEvent:Connect(function(target)
+    print(string.format("Successfully attacked %s", target.Name));
 end)
 
 repeat task.wait() until _G.JojoCombatScripts ~= nil
@@ -29,18 +37,14 @@ repeat task.wait() until _G.JojoCombatScripts ~= nil
 local CombatMod = _G.JojoCombatScripts;
 local ModEvents = CombatMod.Events;
 
-EventsFolder:WaitForChild("Ability").OnClientEvent:Connect(function(Ability:string)
-    ModEvents.FireSignal("Ability", Ability);
+EventsFolder:WaitForChild("Ability").OnClientEvent:Connect(function(Stand:Model, Ability:string)
+    ModEvents.FireSignal("Ability", Stand, Ability);
 end)
 
 ModEvents.GetEventSignal("Block"):Connect(function()
     EventsFolder:FindFirstChild("Block"):FireServer();
 end)
 
-ModEvents.GetEventSignal("Attack"):Connect(function()
-    EventsFolder:FindFirstChild("Attack"):FireServer();
-end)
-
-ModEvents.GetEventSignal("Ability"):Connect(function()
-    EventsFolder:FindFirstChild("Ability"):FireServer();
+ModEvents.GetEventSignal("Attack"):Connect(function(Target:Model, Stand:boolean)
+    EventsFolder:FindFirstChild("Attack"):FireServer(Target, Stand);
 end)

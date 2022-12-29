@@ -2,7 +2,7 @@
 
 --Made by: Spelo1 (@SpeloDev)
 --https://www.roblox.com/library/10976536057/AnimController
---Controls particular Humanoid animations, one Track per AnimationAnimSyncFunc
+--Controls particular Humanoid animations, one Track per Animation
 --Must be Required on Server at least once for Animation Syncing to work
 
 local module = {}

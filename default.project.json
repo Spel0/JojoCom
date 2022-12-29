@@ -22,7 +22,12 @@
           "$className": "Folder",
           "$path": "src/server"
         }
-    }},
+    },
+    "CustomModules": {
+      "$className": "Folder",
+      "$path": "src/live/shared"
+    }
+  },
 
     "StarterPlayer": {
       "$className": "StarterPlayer",

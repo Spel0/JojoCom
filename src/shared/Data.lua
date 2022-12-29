@@ -1,5 +1,6 @@
 --[=[
     @class Data
+    @server
 
     Stores neccessary information for the system
 ]=]
@@ -32,6 +33,9 @@ export type PlayerData = {
     InSpecialAnim: boolean
 }
 
+--[=[
+    @within Data
+]=]
 function interface.getPlayerData(plr:Player)
     if not data[plr.UserId] then
         data[plr.UserId] = {
@@ -41,6 +45,7 @@ function interface.getPlayerData(plr:Player)
             Stand = {
                 Model = nil,
                 Original = nil,
+                Name = nil,
                 Abilities = {},
                 Finisher = nil
             },
@@ -48,10 +53,59 @@ function interface.getPlayerData(plr:Player)
                 IsBlocking = false,
                 LastBlock = 0
             },
-            InSpecialAnim = false
+            InSpecialAnim = false,
+            LastAttack = 0,
+            DamageMult = 1
         };
     end
     return data[plr.UserId];
+end
+
+--[=[
+    @within Data
+]=]
+function interface.getBlockDataFromPlayer(plr:Player): {}
+    local data = interface.getPlayerData(plr);
+    return data.Block;
+end
+
+--[=[
+    @within Data
+]=]
+function interface.getAbilityDataFromPlayer(plr:Player, Ability: string): {}
+    local data = interface.getPlayerData(plr);
+    return data.Stand.Abilities;
+end
+
+--[=[
+    @within Data
+]=]
+function interface.getStandDataFromPlayer(plr:Player): {}
+    local data = interface.getPlayerData(plr);
+    return data.Stand;
+end
+
+--[=[
+    @within Data
+
+    Add or Substract Damage Multiplier Buff for the Player (in %)
+    ```lua
+        Data.applyDamageMult(game.Players.Someone, 0.5) -- Adds 50% Damage Buff, or "-0.5" to Substract it
+    ```
+]=]
+function interface.applyDamageMult(plr:Player, amount:number)
+    local data = interface.getPlayerData(plr);
+    data.DamageMult += amount;
+end
+
+--[=[
+    @within Data
+
+    Gets Player Damage Multiplier
+]=]
+function interface.getDamageMult(plr:Player): number
+    local data = interface.getPlayerData(plr);
+    return data.DamageMult;
 end
 
 --[=[

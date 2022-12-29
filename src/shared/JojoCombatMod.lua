@@ -89,7 +89,11 @@ if RS:IsServer() then
         local PlayerData = Data.getPlayerData(Player);
         PlayerData.Stand.Model = StandClone;
         PlayerData.Stand.Original = Model;
+        PlayerData.Stand.Name = Stand;
         PlayerData.Stand.Abilities = StandData.Abilities;
+        for _,v in PlayerData.Stand.Abilities do
+            v["LastUsed"] = 0;
+        end
         PlayerData.Stand.Finisher = StandData.Finisher;
         --StandClone.Name = "JoJoStand";
         StandClone.Parent = Player.Character or Player.CharacterAdded:Wait();
@@ -118,7 +122,7 @@ if RS:IsServer() then
         @within Main
         @server
 
-        Gets the Player Stand or nil if none is found
+        Gets the Player Stand Model or nil if none is found
     ]=]
     function init.GetStand(Player:Player): Model
         return Data.getPlayerData(Player).Stand.Model;
@@ -151,7 +155,7 @@ if RS:IsServer() then
         ```
     ]=]
     function init.GetFinisherSignal(): (Events.Signal, Events.Signal)
-        return Events.GetEventSignal("Finisher"), Events.GetEventSignal("FinsiherFinale");
+        return Events.GetEventSignal("Finisher"), Events.GetEventSignal("FinisherFinale");
     end
 
     --[=[
@@ -164,6 +168,17 @@ if RS:IsServer() then
         return Data.getPlayerData(plr);
     end
 
+
+    --[=[
+        @within Main
+        @server
+
+        Gets Data Module
+    --]=]
+    function init.GetDataMod(): {}
+        return Data;
+    end
+
     --[=[
         @within Main
         @server
@@ -174,11 +189,10 @@ if RS:IsServer() then
         Data.getPlayerData(plr).Invincible = active;
     end
 
-elseif RS:IsClient() then
-    
-    --[=[
+end
+
+ --[=[
         @within Main
-        @client
 
         Gets Block Event Signal which passes a boolean argument to indicate if Block is activated or not
         ```lua
@@ -191,7 +205,6 @@ elseif RS:IsClient() then
 
     --[=[
         @within Main
-        @client
 
         Gets Attack Event Signal
     ]=]
@@ -201,15 +214,12 @@ elseif RS:IsClient() then
 
     --[=[
         @within Main
-        @client
 
         Gets Ability Event Signal
     ]=]
     function init.GetAbilitySignal()
         return Events.GetEventSignal("Ability");
     end
-
-end
 
 --[=[
     @within Main
@@ -220,12 +230,30 @@ function init.Fire(Name:string, ...:any)
     return Events.FireSignal(Name, ...);
 end
 
+
+--[=[
+    @within Main
+
+    Gets Events Module
+]=]
+function init.GetEventMod(): {}
+    return Events;
+end
+
+--[=[
+        @within Main
+
+        Gets Module Settings
+]=]
+    function init.getModSettings(): {}
+        return require(init.__root.ModSettings);
+    end
+
 --[[
     System Setup
 --]]
 do 
     if (RS:IsServer()) then
-
         local eventFolder = Instance.new("Folder");
         eventFolder.Name = "Events";
         eventFolder.Parent = init.__root;
@@ -257,13 +285,17 @@ do
         if game.Players.LocalPlayer.Character then
             _G.CharAnim = initAnimControl();
         end
+        init.Data = {
+            LastAttack = 0,
+            AttackAnimCount = 1,
+            Attacking = false
+        }
 
         task.delay(0, clonePlayerScripts);
-
-        Events.RegisterEvent("Block");
-        Events.RegisterEvent("Attack");
-        Events.RegisterEvent("Ability");
     end
+    Events.RegisterEvent("Block");
+    Events.RegisterEvent("Attack");
+    Events.RegisterEvent("Ability");
 
 end
 
