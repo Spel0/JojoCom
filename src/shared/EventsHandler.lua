@@ -52,7 +52,7 @@ end
 ]=]
 function interface.FireEvent(Name:string, ...:any)
     local args = {...};
-    local res = Promise.try(function()
+    Promise.try(function()
             return assert(module.__events[Name]);
         end)
         :andThen(function() 
@@ -60,7 +60,6 @@ function interface.FireEvent(Name:string, ...:any)
         end)
         :catch(function()
             warn(string.format("Event %q not found", Name));
-            return false;
         end)
 end
 
@@ -78,12 +77,12 @@ end
 ]=]
 function interface.DestroyEvent(Name:string)
     Promise.try(function()
-            return assert(module.__events[Name].Destroy);
+            return assert(module.__events[Name]);
         end)
         :andThen(function()
             module.__events[Name]:Destroy();
         end)
-        :catch()
+        :catch(function() end)
         :finally(function()
             module.__events[Name] = nil;
         end)

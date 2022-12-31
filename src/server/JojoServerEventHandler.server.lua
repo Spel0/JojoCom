@@ -7,7 +7,7 @@ local Data = require(RSRootFolder.Data);
 local EventsFolder = RSRootFolder:WaitForChild("Events");
 
 
-EventsFolder.Attack.OnServerEvent:Connect(function(plr, target:Model, withStand:boolean)
+EventsFolder.AttackFunc.OnServerInvoke = function(plr, target:Model, withStand:boolean)
     local PlayerData = Data.getPlayerData(plr);
     local targetPlayer = game.Players:GetPlayerFromCharacter(target);
     local targetData;
@@ -15,7 +15,7 @@ EventsFolder.Attack.OnServerEvent:Connect(function(plr, target:Model, withStand:
         targetData = Data.getPlayerData(targetPlayer);
     end
     if not PlayerData.IsDead and os.clock() - PlayerData.LastAttack > ModSettings.AttackCooldown then
-        local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {target};
+        local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {plr.Character, target};
         local targetHit = target:FindFirstChild("HumanoidRootPart") or target.PrimaryPart;
         local HRP = plr.Character.HumanoidRootPart;
         local wallCheck = workspace:Raycast(HRP.Position, HRP.CFrame.LookVector * (HRP.Position - targetHit.Position).magnitude, params);
@@ -26,15 +26,17 @@ EventsFolder.Attack.OnServerEvent:Connect(function(plr, target:Model, withStand:
         else
             dotCheck = (targetHit.Position - HRP.Position).Unit:Dot(HRP.CFrame.LookVector);
         end
-        if wallCheck or dotCheck < 0.1 then return; end
+        if wallCheck or dotCheck < 0.1 then return false; end
         local damage = withStand and ModSettings.StandAttackDamage or ModSettings.AttackDamage;
         local blocking = targetData and targetData.Block.IsBlocking or nil;
         local params = {plr, target, damage*PlayerData.DamageMult, blocking};
         EventsHandler.FireEvent("Attack", unpack(params));
         EventsFolder.Attack:FireClient(unpack(params));
         PlayerData.LastAttack = os.clock();
+        return true;
     end
-end)
+    return false;
+end
 
 EventsFolder.Block.OnServerEvent:Connect(function(plr)
     local PlayerData = Data.getPlayerData(plr);

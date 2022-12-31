@@ -1,7 +1,9 @@
 local Player = game.Players.LocalPlayer;
-local RS = game:GetService"ReplicatedStorage";
-local RSRootFolder = RS:WaitForChild"JojoCombatScripts";
+local RepStorage = game:GetService"ReplicatedStorage";
+local RS = game:GetService"RunService";
+local RSRootFolder = RepStorage:WaitForChild"JojoCombatScripts";
 local EventsFolder = RSRootFolder:WaitForChild("Events");
+local EventsHandler = require(RSRootFolder.EventsHandler)
 local StandMod = require(RSRootFolder.Stand);
 
 local function PackToAnimList(Table)
@@ -46,5 +48,9 @@ ModEvents.GetEventSignal("Block"):Connect(function()
 end)
 
 ModEvents.GetEventSignal("Attack"):Connect(function(Target:Model, Stand:boolean)
-    EventsFolder:FindFirstChild("Attack"):FireServer(Target, Stand);
+    EventsHandler.RegisterEvent("AttackCallback");
+    local res = EventsFolder:FindFirstChild("AttackFunc"):InvokeServer(Target, Stand);
+    EventsHandler.FireEvent("AttackCallback", res);
+    RS.Heartbeat:Wait();
+    EventsHandler.DestroyEvent("AttackCallback");
 end)

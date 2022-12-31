@@ -270,6 +270,10 @@ do
         AttackEvent.Name = "Attack";
         AttackEvent.Parent = eventFolder;
 
+        local AttackFuncEvent = Instance.new("RemoteFunction");
+        AttackFuncEvent.Name = "AttackFunc";
+        AttackFuncEvent.Parent = eventFolder;
+
         local BlockEvent = Instance.new("RemoteEvent");
         BlockEvent.Name = "Block";
         BlockEvent.Parent = eventFolder;

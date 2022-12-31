@@ -62,20 +62,25 @@ function module.new(origin:Vector3, direction:Vector3, sizeX:number, sizeY:numbe
     return self;
 end
 
-function module:registerHit(callback:(Model)->(), oncePerModel:boolean?, cooldownBetweenHits:number?)
+function module:registerHit(callback:(Model)->(boolean), oncePerModel:boolean?, cooldownBetweenHits:number?)
     local hitTable = {};
     cooldownBetweenHits = cooldownBetweenHits or 0;
     disconnectEvent(self.__hitEvent);
     local params = OverlapParams.new(); params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = self.__ignoreList; params.RespectCanCollide = false;
     self.__hitEvent = RS.Heartbeat:Connect(function()
         if not self.Alive then return; end
+        local indexed = {};
         for _,v in workspace:GetPartsInPart(self.__hitbox, params) do
             local Model = v:FindFirstAncestorWhichIsA("Model");
-            if not Model or not Model:FindFirstChildWhichIsA("Humanoid") or (hitTable[Model] and (oncePerModel or os.clock() - cooldownBetweenHits < hitTable[Model].LastHit)) then return; end
+            if not Model or not Model:FindFirstChildWhichIsA("Humanoid") or (hitTable[Model] and (oncePerModel or os.clock() - cooldownBetweenHits < hitTable[Model].LastHit)) or indexed[Model] then return; end
             hitTable[Model] = {
                 LastHit = os.clock();
             }
-            callback(Model);
+            indexed[Model] = true;
+            local hit = callback(Model);
+            if not hit and hit ~= nil then
+                hitTable[Model] = nil;
+            end
         end
         RS.Heartbeat:Wait();
     end)

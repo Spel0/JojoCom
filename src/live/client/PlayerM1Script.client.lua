@@ -21,6 +21,8 @@ CAS:BindAction("Attack", function(_, inputState)
         local duration = 0.6;
         HitboxMod.new((HRP.CFrame*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character}, true):registerHit(function(Model)
             Event:Fire(Model, false);
+            local res = JojoCombat.GetEventMod().GetEventSignal("AttackCallback"):Wait();
+            return res;
         end, true):setFollowTarget(HRP, Vector3.new(0, 0, -(distance/2)));
         JojoCombat.Data.Attacking = true;
         JojoCombat.Data.LastAttack = os.clock();
@@ -42,7 +44,9 @@ CAS:BindAction("AttackStand", function(_, inputState)
         local distance = 10;
         local duration = 0.6;
         HitboxMod.new((HRP.CFrame*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character}, true):registerHit(function(Model)
-            Event:Fire(Model, true);
+            Event:Fire(Model, false);
+            local res = JojoCombat.GetEventMod().GetEventSignal("AttackCallback"):Wait();
+            return res;
         end, true);
         JojoCombat.Data.Attacking = true;
         JojoCombat.Data.LastAttack = os.clock();
