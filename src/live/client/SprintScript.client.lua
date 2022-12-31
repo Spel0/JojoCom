@@ -1,5 +1,6 @@
 local CAS = game:GetService"ContextActionService";
 local Player = game.Players.LocalPlayer;
+local RS = game:GetService("RunService");
 
 local mouseLockController = Player.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("CameraModule"):WaitForChild("MouseLockController");
 local obj = mouseLockController:FindFirstChild("BoundKeys")
@@ -19,14 +20,23 @@ CAS:BindAction("Sprint", function(_, inputState)
     if inputState ~= Enum.UserInputState.Begin then return; end
     _G.IsRunning = not _G.IsRunning;
     Event:FireServer(_G.IsRunning);
-    Player.Character.Humanoid.WalkSpeed = _G.IsRunning and 28 or 16;
+    local character = Player.Character;
+    character.Humanoid.WalkSpeed = _G.IsRunning and 28 or 16;
     if not _G.CharAnim then return; end
-    local con; con = Player.Character.Humanoid.Running:Connect(function(speed)
-        if not _G.IsRunning then con:Disconnect(); return; end
-        if speed > 0 and not _G.CharAnim:IsAnimPlaying("Sprint") then
+    local con; con = RS.Heartbeat:Connect(function()
+        if not _G.IsRunning then 
+            con:Disconnect(); 
+            if _G.CharAnim:IsAnimPlaying("Sprint") then
+                _G.CharAnim:StopAnim("Sprint");
+            end
+            return; 
+        end
+        if character.Humanoid.MoveDirection.Magnitude > 0 and not _G.CharAnim:IsAnimPlaying("Sprint") and _G.GlobalFunc.IsOnGround(character) then
             _G.CharAnim:PlayAnim("Sprint");
-        elseif speed == 0 and _G.CharAnim:IsAnimPlaying("Sprint") then
-            _G.CharAnim:StopAnim("Sprint");
+        elseif (character.Humanoid.MoveDirection.Magnitude == 0 and _G.CharAnim:IsAnimPlaying("Sprint")) or not _G.GlobalFunc.IsOnGround(character) then
+            if _G.CharAnim:IsAnimPlaying("Sprint") then
+                _G.CharAnim:StopAnim("Sprint");
+            end
         end
     end)
 end, true, Enum.KeyCode.LeftShift);

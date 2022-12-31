@@ -1,8 +1,5 @@
 local CAS = game:GetService"ContextActionService";
-local UIS = game:GetService"UserInputService";
 local Player = game.Players.LocalPlayer;
-local PlayerModule = require(game.Players.LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"));
-local Controls = PlayerModule:GetControls();
 
 local cooldown = 3;
 local last = os.clock();
@@ -19,5 +16,6 @@ CAS:BindAction("Dash", function(_, inputState)
     last = os.clock();
     if not _G.CharAnim then return; end
     local side = ((MoveDir:Dot(HRP.CFrame.LookVector * 1) >= .5 and "Front") or (MoveDir:Dot(HRP.CFrame.LookVector * -1) >= .5 and "Back")) or ((MoveDir:Dot(HRP.CFrame.RightVector * 1) >= .75 and "Right") or (MoveDir:Dot(HRP.CFrame.RightVector * -1) >= .75 and "Left"));
+    _G.CharAnim:PlayAnim(string.format("Roll %s", side));
 end, true, Enum.KeyCode.LeftControl);
 CAS:SetTitle("Dash", "Dash");

@@ -9,5 +9,6 @@ return {
     HealthForFinisher = 10,
     AttackCooldown = 0.5,
     AttackDamage = 15,
-    StandAttackDamage = 30
+    StandAttackDamage = 30,
+    BlockWearOff = 2
 }

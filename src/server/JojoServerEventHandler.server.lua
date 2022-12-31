@@ -9,6 +9,11 @@ local EventsFolder = RSRootFolder:WaitForChild("Events");
 
 EventsFolder.Attack.OnServerEvent:Connect(function(plr, target:Model, withStand:boolean)
     local PlayerData = Data.getPlayerData(plr);
+    local targetPlayer = game.Players:GetPlayerFromCharacter(target);
+    local targetData;
+    if targetPlayer then
+        targetData = Data.getPlayerData(targetPlayer);
+    end
     if not PlayerData.IsDead and os.clock() - PlayerData.LastAttack > ModSettings.AttackCooldown then
         local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {target};
         local targetHit = target:FindFirstChild("HumanoidRootPart") or target.PrimaryPart;
@@ -23,8 +28,10 @@ EventsFolder.Attack.OnServerEvent:Connect(function(plr, target:Model, withStand:
         end
         if wallCheck or dotCheck < 0.1 then return; end
         local damage = withStand and ModSettings.StandAttackDamage or ModSettings.AttackDamage;
-        EventsHandler.FireEvent("Attack", plr, target, damage*PlayerData.DamageMult);
-        EventsFolder.Attack:FireClient(plr, target, damage*PlayerData.DamageMult);
+        local blocking = targetData and targetData.Block.IsBlocking or nil;
+        local params = {plr, target, damage*PlayerData.DamageMult, blocking};
+        EventsHandler.FireEvent("Attack", unpack(params));
+        EventsFolder.Attack:FireClient(unpack(params));
         PlayerData.LastAttack = os.clock();
     end
 end)

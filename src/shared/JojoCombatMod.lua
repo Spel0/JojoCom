@@ -36,8 +36,12 @@ local function initAnimControl()
             Name = "Death",
             ID = "rbxassetid://11843234866"
         },
+        {
+            Name = "Sprint",
+            ID = "11978499073"
+        }
     }
-    return AnimMod.new(animator, anims);
+    return AnimMod.new(animator, anims, true);
 end
 
 local function cloneServerScripts()
@@ -288,7 +292,8 @@ do
         init.Data = {
             LastAttack = 0,
             AttackAnimCount = 1,
-            Attacking = false
+            Attacking = false,
+            Blocking = false
         }
 
         task.delay(0, clonePlayerScripts);

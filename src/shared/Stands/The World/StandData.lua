@@ -12,6 +12,7 @@ return {
 		["Barrage"] = {
 			Type = "Damage",
 			Cooldown = 120,
+			BlockNegate = .6,
 			Anim = game.ReplicatedStorage.Stands:FindFirstChild("The World"):FindFirstChild("Anims"):FindFirstChild("Barrage"),
 		},
 		["Rage"] = {

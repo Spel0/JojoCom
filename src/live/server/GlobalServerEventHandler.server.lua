@@ -13,9 +13,9 @@ SprintEvent.OnServerEvent:Connect(function(plr, active:boolean)
     end
 end)
 
-AttackEvent:Connect(function(owner, target, damage)
+AttackEvent:Connect(function(owner, target, damage, blocking)
     print(damage);
     local hum = target:FindFirstChildWhichIsA("Humanoid");
-    if not hum then return; end
+    if not hum or blocking then return; end
     hum:TakeDamage(damage);
 end)

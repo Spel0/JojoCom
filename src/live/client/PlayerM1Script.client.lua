@@ -1,14 +1,14 @@
+repeat task.wait() until _G.JojoCombatScripts;
 local CAS = game:GetService"ContextActionService";
 local Player = game.Players.LocalPlayer;
-local ModSettings = require(game.ReplicatedStorage:WaitForChild("JojoCombatScripts").ModSettings);
+local JojoCombat = _G.JojoCombatScripts;
+local ModSettings = JojoCombat.getModSettings();
 local HitboxMod = require(game.ReplicatedStorage.CustomModules.Hitbox);
 local MaxAttack = 4;
-repeat task.wait() until _G.JojoCombatScripts;
-local JojoCombat = _G.JojoCombatScripts;
 local Event = JojoCombat.GetAttackSignal();
 
-CAS:BindAction("Attack", function(_, inputState) 
-    if inputState ~= Enum.UserInputState.Begin or not _G.GlobalFunc.IsAlive(Player.Character) or JojoCombat.Data.Attacking then return; end
+CAS:BindAction("Attack", function(_, inputState)
+    if inputState ~= Enum.UserInputState.Begin or not _G.GlobalFunc.IsAlive(Player.Character) or JojoCombat.Data.Attacking or JojoCombat.Data.Blocking then return; end
     if os.clock() - JojoCombat.Data.LastAttack > ModSettings.AttackCooldown then
         if _G.CharAnim then
             if JojoCombat.Data.AttackAnimCount > MaxAttack then JojoCombat.Data.AttackAnimCount = 1; end
@@ -31,7 +31,7 @@ end, true, Enum.UserInputType.MouseButton1)
 CAS:SetTitle("Attack", "Attack");
 
 CAS:BindAction("AttackStand", function(_, inputState) 
-    if inputState ~= Enum.UserInputState.Begin or not _G.GlobalFunc.IsAlive(Player.Character) or not JojoCombat.Stand or JojoCombat.Data.Attacking then return; end
+    if inputState ~= Enum.UserInputState.Begin or not _G.GlobalFunc.IsAlive(Player.Character) or not JojoCombat.Stand or JojoCombat.Data.Attacking or JojoCombat.Data.Blocking then return; end
     if os.clock() - JojoCombat.Data.LastAttack > ModSettings.AttackCooldown then
             if JojoCombat.Data.AttackAnimCount > MaxAttack then JojoCombat.Data.AttackAnimCount = 1; end
             JojoCombat.Stand:SetIdle(false);

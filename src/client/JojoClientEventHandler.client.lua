@@ -28,8 +28,8 @@ EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boo
     _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(require(RSRootFolder.Stands:FindFirstChild(Name).StandData)["Anims"]), hoverOffset, char:WaitForChild("HumanoidRootPart")) or nil;
 end)
 
-EventsFolder:WaitForChild("Attack").OnClientEvent:Connect(function(target)
-    print(string.format("Successfully attacked %s", target.Name));
+EventsFolder:WaitForChild("Attack").OnClientEvent:Connect(function(target, damage, blocking)
+    print(string.format("Successfully attacked %s for %s damage%s", target.Name, damage, blocking and ", but he blocked it!" or ""));
 end)
 
 repeat task.wait() until _G.JojoCombatScripts ~= nil
