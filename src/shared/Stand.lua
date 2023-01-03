@@ -10,6 +10,7 @@ stand.__index = stand;
 local AnimMod = require(game.ReplicatedStorage.JojoCombatScripts.Dependencies.AnimController);
 local RS = game:GetService"RunService";
 local Player = game.Players.LocalPlayer;
+local JojoCombat = require(game.ReplicatedStorage.JojoCombatScripts.JojoCombatMod);
 
 --[=[
     @class Stand
@@ -21,14 +22,15 @@ local Player = game.Players.LocalPlayer;
     Stand.new(game.ReplicatedStorage.Stands["The World"], AnimList)
     ```
 ]=]
-function stand.new(Stand:Model, Anims:AnimMod.animList, HoverOffset:CFrame?, PrimaryPart:Part?)
+function stand.new(Stand:Model, Anims:AnimMod.animList, Abilities:{}, HoverOffset:CFrame?, PrimaryPart:Part?)
     local self = setmetatable({
         __stand = Stand,
         __animmod = AnimMod.new(Stand:WaitForChild("AnimationController", 10):WaitForChild("Animator", 10), Anims),
         __idle = true,
         __primaryPart = PrimaryPart,
         __offset = HoverOffset or CFrame.new(2.5, 2.5, 3),
-        Alive = true
+        Alive = true,
+        Abilities = Abilities
     }, stand);
 
     local vel = Instance.new("BodyVelocity"); --Make Stand stay in place
@@ -44,7 +46,7 @@ end
 
 function stand:__update()
     assert(self.__stand.PrimaryPart, "Please specify the primary part of the Stand model");
-    while self do
+    while self.Alive do
         if self.__idle then
             self.__stand.PrimaryPart.CFrame = (self.__primaryPart and self.__primaryPart.CFrame or Player.Character.PrimaryPart.CFrame) * self.__offset;
         end
@@ -52,7 +54,30 @@ function stand:__update()
     end
 end
 
+--[=[
+    @within Stand
+    @client
 
+    Use Stand Ability if it Exists and Cooldown isn't in effect
+]=]
+function stand:UseAbility(Name:string)
+    if self.Abilities and self.Abilities[Name] then
+        if self.Abilities[Name].Cooldown and os.clock() - (self.Abilities[Name].LastUsed or 0) > self.Abilities[Name].Cooldown then
+            JojoCombat.Fire("Ability", self.__stand.Name, Name);
+            self.Abilities[Name].LastUsed = os.clock();
+        end
+    end
+end
+
+--[=[
+    @within Stand
+    @client
+
+    Get Stand Idle Status
+]=]
+function stand:GetIdle()
+    return self.__idle;
+end
 --[=[ 
     @within Stand
     @client
@@ -108,8 +133,9 @@ end
 function stand:Destroy()
     self.__stand:Destroy();
     table.clear(self);
+    self.Alive = false;
     setmetatable(self, {__index = function() error("The Stand was already Destroyed, please use \"Stand.Alive\" property if you want to check if it's active") end});
 end
 
-stand.__newindex = function() error("Read-only") end;
+table.freeze(stand);
 return setmetatable({}, stand);

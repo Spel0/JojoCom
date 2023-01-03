@@ -21,6 +21,18 @@ local AnimMod = require(script.Parent.Dependencies.AnimController);
 local Events = init.Events;
 local Data = init.Data;
 
+
+local function deepCopy(original)
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            v = deepCopy(v)
+        end
+        copy[k] = v
+    end
+    return copy
+end
+
 --[=[
     @within Main
     @client
@@ -39,6 +51,26 @@ local function initAnimControl()
         {
             Name = "Sprint",
             ID = "11978499073"
+        },
+        {
+            Name = "Idle",
+            ID = "12014000608"
+        },
+        {
+            Name = "Attack1",
+            ID = "12014008263"
+        },
+        {
+            Name = "Attack2",
+            ID = "12014012047"
+        },
+        {
+            Name = "Attack3",
+            ID = "12014016019"
+        },
+        {
+            Name = "Attack4",
+            ID = "12014028461"
         }
     }
     return AnimMod.new(animator, anims, true);
@@ -94,7 +126,7 @@ if RS:IsServer() then
         PlayerData.Stand.Model = StandClone;
         PlayerData.Stand.Original = Model;
         PlayerData.Stand.Name = Stand;
-        PlayerData.Stand.Abilities = StandData.Abilities;
+        PlayerData.Stand.Abilities = deepCopy(StandData.Abilities);
         for _,v in PlayerData.Stand.Abilities do
             v["LastUsed"] = 0;
         end
@@ -249,8 +281,17 @@ end
 
         Gets Module Settings
 ]=]
-    function init.getModSettings(): {}
+    function init.GetModSettings(): {}
         return require(init.__root.ModSettings);
+    end
+
+    --[=[
+        @within Main
+
+        Gets Utility Module
+]=]
+    function init.GetUtilMod(): {}
+        return require(init.__root.Util);
     end
 
 --[[
@@ -281,6 +322,10 @@ do
         local StandEvent = Instance.new("RemoteEvent");
         StandEvent.Name = "StandInit";
         StandEvent.Parent = eventFolder;
+
+        local KnockbackEvent = Instance.new("RemoteEvent");
+        KnockbackEvent.Name = "Knockback";
+        KnockbackEvent.Parent = eventFolder;
 
         task.delay(0, cloneServerScripts);
 

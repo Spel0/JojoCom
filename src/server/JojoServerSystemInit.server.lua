@@ -66,12 +66,12 @@ local function initializePlayer(plr)
             if res then return; end
             Events.FireEvent("Finisher", trigger, target, Finisher);
             Proxy:Destroy();
-            triggerData.Invincible = true;
-            targetData.Invincible = true;
+            CombatMod.MakePlayerInvincible(trigger, true);
+            CombatMod.MakePlayerInvincible(target, true);
             target:SetAttribute("SpecialDeath", true);
             Events.GetEventSignal("FinisherFinale"):Wait();
-            triggerData.Invincible = false;
-            targetData.Invincible = false;
+            CombatMod.MakePlayerInvincible(target, false);
+            CombatMod.MakePlayerInvincible(trigger, false);
             target.Character.Humanoid.Health = 0;
             target.CharacterRemoving:Wait();
             target:SetAttribute("SpecialDeath", false);

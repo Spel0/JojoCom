@@ -1,8 +1,8 @@
-repeat task.wait() until _G.JojoCombatScripts;
+if not _G.JojoCombatScripts then repeat task.wait() until _G.JojoCombatScripts end
 local CAS = game:GetService"ContextActionService";
 local Player = game.Players.LocalPlayer;
 local JojoCombat = _G.JojoCombatScripts
-local ModSettings = JojoCombat.getModSettings();
+local ModSettings = JojoCombat.GetModSettings();
 local cooldown = ModSettings.BlockCooldown;
 local last = os.clock();
 

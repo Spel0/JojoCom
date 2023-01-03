@@ -14,4 +14,8 @@ function module.IsOnGround(char:Model)
     return false;
 end
 
+function module.ApplyImpulse(Part:BasePart, Direction:Vector3, power:number)
+    Part:ApplyImpulse(Direction*power);
+end
+
 return module;

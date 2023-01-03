@@ -20,14 +20,21 @@ end
 EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boolean, Name:string?, Model:Model?)
     local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait();
     active = active and true or false;
-    if _G.JojoCombatScripts.Stand ~= nil then
+    if _G.JojoCombatScripts.Stand ~= nil and _G.JojoCombatScripts.Stand.Alive then
         _G.JojoCombatScripts.Stand:Destroy();
     end
     local hoverOffset:CFrame;
     if Name == "The World" then
         hoverOffset = CFrame.new(2, 1, 2);
     end
-    _G.JojoCombatScripts.Stand = active and StandMod.new(Model, PackToAnimList(require(RSRootFolder.Stands:FindFirstChild(Name).StandData)["Anims"]), hoverOffset, char:WaitForChild("HumanoidRootPart")) or nil;
+    if active then
+        local StandFolder = RSRootFolder.Stands:FindFirstChild(Name);
+        assert(StandFolder, "Invalid Stand");
+        local StandData = require(StandFolder.StandData);
+        _G.JojoCombatScripts.Stand = StandMod.new(Model, PackToAnimList(StandData["Anims"]), StandData["Abilities"], hoverOffset, char:WaitForChild("HumanoidRootPart"))
+    else
+        _G.JojoCombatScripts.Stand = nil;
+    end
 end)
 
 EventsFolder:WaitForChild("Attack").OnClientEvent:Connect(function(target, damage, blocking)

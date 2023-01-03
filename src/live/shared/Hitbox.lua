@@ -2,6 +2,7 @@ local module = {};
 local meta = {__index = module};
 
 local RS = game:GetService("RunService");
+local Visualize = true;
 
 local function unpackParts(Table:{})
     local toReturn = {};
@@ -42,7 +43,7 @@ function module.new(origin:Vector3, direction:Vector3, sizeX:number, sizeY:numbe
     hit.Anchored = true;
     hit.Color = Color3.new(1, 0, 0);
     hit.Material = Enum.Material.SmoothPlastic;
-    hit.Transparency = visualize and 0.8 or 1;
+    hit.Transparency = (visualize or Visualize) and 0.8 or 1;
     hit.CanCollide = false;
     hit.CanTouch = true;
     hit.CanQuery = false;
@@ -82,7 +83,6 @@ function module:registerHit(callback:(Model)->(boolean), oncePerModel:boolean?, 
                 hitTable[Model] = nil;
             end
         end
-        RS.Heartbeat:Wait();
     end)
     return self;
 end
