@@ -76,15 +76,18 @@ local Abilities = {
         for _,player in game.Players:GetPlayers() do
             if (plr.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= AbilData.Distance then
                 local localPlayer = plr == player;
+                local TargetData = Data.getPlayerData(plr);
                 TimeStopEvent:FireClient(player, not localPlayer, AbilData.Duration);
                 game.Players.RespawnTime = AbilData.Duration + 3;
                 if not localPlayer then
                     player.Character.HumanoidRootPart.Anchored = true;
+                    TargetData.IsDead = true;
                     local Animator = player.Character.Humanoid.Animator;
                     Animator.Parent = nil;
                     task.delay(AbilData.Duration, function()
                         game.Players.RespawnTime = 3;
                         if player.Character.Humanoid.Health ~= 0 then
+                            TargetData.IsDead = false;
                             player.Character.HumanoidRootPart.Anchored = false;
                         end
                         Animator.Parent = player.Character.Humanoid;
