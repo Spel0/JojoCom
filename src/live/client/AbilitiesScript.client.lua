@@ -4,11 +4,13 @@ local Player = game.Players.LocalPlayer;
 local RepStorage = game:GetService"ReplicatedStorage";
 local RS = game:GetService"RunService";
 local CAS = game:GetService"ContextActionService";
+local UIS = game:GetService"UserInputService";
 local RSRootFolder = RepStorage:WaitForChild"JojoCombatScripts";
 local EventsFolder = RSRootFolder:WaitForChild("Events");
 local EventsHandler = require(RSRootFolder.EventsHandler)
 local StandMod = require(RSRootFolder.Stand);
 local HitboxMod = require(game.ReplicatedStorage.CustomModules.Hitbox);
+local UtilMod = JojoCombat.GetUtilMod();
 local activatedActions = {}
 
 local Abilities = {
@@ -21,6 +23,32 @@ local Abilities = {
             EventsFolder:FindFirstChild("Ability"):FireServer("Heavy Punch", Stand, Model);
         end, true);
         return duration;
+    end,
+    ["Rage"] = function(Stand)
+        if not RSRootFolder.Stands:FindFirstChild(Stand) then warn(string.format("Stand %q not found", Stand)) return; end
+        local StandData = require(RSRootFolder.Stands:FindFirstChild(Stand).StandData)
+        if not StandData.Abilities.Rage then return; end
+        if JojoCombat.Data.DamageDealt >= StandData.Abilities.Rage.NeedDamage then
+            EventsFolder:FindFirstChild("Ability"):FireServer("Rage")
+        end
+    end,
+    ["Teleport"] = function(Stand)
+        local Player = game.Players.LocalPlayer;
+        if not RSRootFolder.Stands:FindFirstChild(Stand) then warn(string.format("Stand %q not found", Stand)) return; end
+        local StandData = require(RSRootFolder.Stands:FindFirstChild(Stand).StandData)
+        if not StandData.Abilities.Teleport then return; end
+        local AbilData = StandData.Abilities.Teleport
+        if UtilMod.GetPlatform() == "PC" then
+            local MouseHit = Player:GetMouse().Hit.Position;
+            local PlayerPos = Player.Character.HumanoidRootPart.Position;
+            local MouseHit2 = Vector3.new(MouseHit.X, PlayerPos.Y, MouseHit.Z)
+            Player.Character:MoveTo(PlayerPos + (CFrame.new(PlayerPos, MouseHit2).LookVector*math.clamp((PlayerPos - MouseHit2).Magnitude, 0, AbilData.MaxDistance)));
+        else
+            Player.Character:MoveTo(Player.Character.HumanoidRootPart.CFrame.LookVector*math.random(3, AbilData.MaxDistance));
+        end
+    end,
+    ["Time Stop"] = function(Stand)
+        EventsFolder:FindFirstChild("Ability"):FireServer("Time Stop", Stand);
     end
 }
 
@@ -51,6 +79,7 @@ EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boo
 end)
 
 JojoCombat.GetAbilitySignal():Connect(function(Stand:string, Ability:string)
+    if not Abilities[Ability] then warn(string.format("Ability %q not found", Ability)); return; end
     JojoCombat.Data.Attacking = true;
     print(Stand, Ability);
     if JojoCombat.Stand.Abilities[Ability].Anim ~= nil then

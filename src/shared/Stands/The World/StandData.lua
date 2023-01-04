@@ -12,6 +12,8 @@ return {
 		["Time Stop"] = {
 			Type = "Util",
 			Cooldown = 60,
+			Distance = 50,
+			Duration = 10,
 			Anim = nil,
 			BindKey = Enum.KeyCode.H
 		},
@@ -25,11 +27,14 @@ return {
 		["Rage"] = {
 			Type = "Buff",
 			Anim = nil,
+			NeedDamage = 100,
+			ActiveFor = 30,
 			BindKey = Enum.KeyCode.G
 		},
 		["Teleport"] = {
 			Type = "Util",
 			Cooldown = 30,
+			MaxDistance = 50,
 			Anim = nil,
 			BindKey = Enum.KeyCode.Z
 		},

@@ -39,6 +39,9 @@ end)
 
 EventsFolder:WaitForChild("Attack").OnClientEvent:Connect(function(target, damage, blocking)
     print(string.format("Successfully attacked %s for %s damage%s", target.Name, damage, blocking and ", but he blocked it!" or ""));
+    if not blocking then
+        _G.JojoCombatScripts.Data.DamageDealt += damage;
+    end
 end)
 
 repeat task.wait() until _G.JojoCombatScripts ~= nil

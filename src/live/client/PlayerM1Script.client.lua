@@ -6,6 +6,7 @@ local ModSettings = JojoCombat.GetModSettings();
 local HitboxMod = require(game.ReplicatedStorage.CustomModules.Hitbox);
 local MaxAttack = 4;
 local Event = JojoCombat.GetAttackSignal();
+local TS = game:GetService"TweenService";
 
 CAS:BindAction("Attack", function(_, inputState)
     if inputState ~= Enum.UserInputState.Begin or not _G.GlobalFunc.IsAlive(Player.Character) or JojoCombat.Data.Attacking or JojoCombat.Data.Blocking then return; end
@@ -43,10 +44,11 @@ CAS:BindAction("AttackStand", function(_, inputState)
             JojoCombat.Data.AttackAnimCount += 1;
         local _, _, _, R00, R01, R02, R10, R11, R12, R20, R21, R22 = HRP.CFrame:GetComponents();
         local StandModel = JojoCombat.Stand:GetModel();
-        StandModel.PrimaryPart.CFrame = CFrame.new(HRP.CFrame * Vector3.new(0, 1, -3)) * CFrame.new(0, 0, 0, R00, R01, R02, R10, R11, R12, R20, R21, R22);
-        local distance = 8;
+        local FinalPos = CFrame.new(HRP.CFrame * Vector3.new(0, 1, -3)) * CFrame.new(0, 0, 0, R00, R01, R02, R10, R11, R12, R20, R21, R22);
+        TS:Create(StandModel.PrimaryPart, TweenInfo.new(0.1), {CFrame = FinalPos}):Play();
+        local distance = 5;
         local duration = 0.6;
-        HitboxMod.new((StandModel.PrimaryPart.CFrame*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character}):registerHit(function(Model)
+        HitboxMod.new((FinalPos*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character}):registerHit(function(Model)
             Event:Fire(Model, false);
             local res = JojoCombat.GetEventMod().GetEventSignal("AttackCallback"):Wait() or false;
             return res;
@@ -58,4 +60,4 @@ CAS:BindAction("AttackStand", function(_, inputState)
         JojoCombat.Stand:SetIdle(true);
     end
 end, true, Enum.KeyCode.Q)
-CAS:SetTitle("AttackStand", "Stand Attack");--]]
+CAS:SetTitle("AttackStand", "Stand Attack");

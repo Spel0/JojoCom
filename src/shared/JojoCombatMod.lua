@@ -342,7 +342,8 @@ do
             LastAttack = 0,
             AttackAnimCount = 1,
             Attacking = false,
-            Blocking = false
+            Blocking = false,
+            DamageDealt = 0
         }
 
         task.delay(0, clonePlayerScripts);

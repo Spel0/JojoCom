@@ -1,5 +1,4 @@
 local JojoMod = require(game.ReplicatedStorage.JojoCombatScripts.JojoCombatMod);
---require(game.ReplicatedStorage.JojoCombatScripts.Dependencies.AnimController);
 
 game.Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function(char)

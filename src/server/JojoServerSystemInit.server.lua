@@ -80,7 +80,7 @@ local function initializePlayer(plr)
         task.spawn(function()
             while Proxy do
                 FinisherProxyPart.Position = char:FindFirstChild("Head").Position;
-                if char.Humanoid.Health <= ModSettings.HealthForFinisher and ModSettings.HealthForFinisher ~= 0 then
+                if char.Humanoid.Health ~= 0 and char.Humanoid.Health <= ModSettings.HealthForFinisher and ModSettings.HealthForFinisher ~= 0 then
                     Proxy.Enabled = true;
                 else
                     Proxy.Enabled = false;

@@ -55,7 +55,8 @@ function interface.getPlayerData(plr:Player)
             },
             InSpecialAnim = false,
             LastAttack = 0,
-            DamageMult = 1
+            DamageMult = 1,
+            DamageDealt = 0
         };
     end
     return data[plr.UserId];

@@ -29,7 +29,7 @@ EventsFolder.AttackFunc.OnServerInvoke = function(plr, target:Model, withStand:b
         end
         if wallCheck or dotCheck < 0.1 then return false; end
         local damage = withStand and ModSettings.StandAttackDamage or ModSettings.AttackDamage;
-        local blocking = targetData and targetData.Block.IsBlocking or nil;
+        local blocking = targetData and (targetData.Block.IsBlocking or targetData.InSpecialAnim) or nil;
         local params = {plr, target, damage*PlayerData.DamageMult, blocking};
         EventsHandler.FireEvent("Attack", unpack(params));
         EventsFolder.Attack:FireClient(unpack(params));

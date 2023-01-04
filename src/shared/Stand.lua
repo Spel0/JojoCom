@@ -62,7 +62,7 @@ end
 ]=]
 function stand:UseAbility(Name:string)
     if self.Abilities and self.Abilities[Name] then
-        if self.Abilities[Name].Cooldown and os.clock() - (self.Abilities[Name].LastUsed or 0) > self.Abilities[Name].Cooldown then
+        if not self.Abilities[Name].Cooldown or (self.Abilities[Name].Cooldown and os.clock() - (self.Abilities[Name].LastUsed or 0) > self.Abilities[Name].Cooldown) then
             JojoCombat.Fire("Ability", self.__stand.Name, Name);
             self.Abilities[Name].LastUsed = os.clock();
         end
