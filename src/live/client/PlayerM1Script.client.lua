@@ -45,7 +45,7 @@ CAS:BindAction("AttackStand", function(_, inputState)
         local _, _, _, R00, R01, R02, R10, R11, R12, R20, R21, R22 = HRP.CFrame:GetComponents();
         local StandModel = JojoCombat.Stand:GetModel();
         local FinalPos = CFrame.new(HRP.CFrame * Vector3.new(0, 1, -3)) * CFrame.new(0, 0, 0, R00, R01, R02, R10, R11, R12, R20, R21, R22);
-        TS:Create(StandModel.PrimaryPart, TweenInfo.new(0.1), {CFrame = FinalPos}):Play();
+        TS:Create(StandModel.PrimaryPart, TweenInfo.new(0.2), {CFrame = FinalPos}):Play();
         local distance = 5;
         local duration = 0.6;
         HitboxMod.new((FinalPos*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character}):registerHit(function(Model)

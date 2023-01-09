@@ -20,61 +20,7 @@ local RS = game:GetService"RunService";
 local AnimMod = require(script.Parent.Dependencies.AnimController);
 local Events = init.Events;
 local Data = init.Data;
-
-
-local function deepCopy(original)
-    local copy = {}
-    for k, v in pairs(original) do
-        if type(v) == "table" then
-            v = deepCopy(v)
-        end
-        copy[k] = v
-    end
-    return copy
-end
-
---[=[
-    @within Main
-    @client
-    @ignore
-
-    Initialize player character animations
-]=]
-local function initAnimControl()
-    local Character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait();
-    local animator = Character:WaitForChild("Humanoid"):WaitForChild("Animator");
-    local anims = {
-        {
-            Name = "Death",
-            ID = "rbxassetid://11843234866"
-        },
-        {
-            Name = "Sprint",
-            ID = "11978499073"
-        },
-        {
-            Name = "Idle",
-            ID = "12014000608"
-        },
-        {
-            Name = "Attack1",
-            ID = "12014008263"
-        },
-        {
-            Name = "Attack2",
-            ID = "12014012047"
-        },
-        {
-            Name = "Attack3",
-            ID = "12014016019"
-        },
-        {
-            Name = "Attack4",
-            ID = "12014028461"
-        }
-    }
-    return AnimMod.new(animator, anims, true);
-end
+local Util = require(init.__root.Util);
 
 local function cloneServerScripts()
     local scriptFolder = Instance.new("Folder");
@@ -126,18 +72,20 @@ if RS:IsServer() then
         PlayerData.Stand.Model = StandClone;
         PlayerData.Stand.Original = Model;
         PlayerData.Stand.Name = Stand;
-        PlayerData.Stand.Abilities = deepCopy(StandData.Abilities);
+        PlayerData.Stand.Abilities = Util.DeepCopy(StandData.Abilities);
         for _,v in PlayerData.Stand.Abilities do
             v["LastUsed"] = 0;
         end
         PlayerData.Stand.Finisher = StandData.Finisher;
         --StandClone.Name = "JoJoStand";
-        StandClone.Parent = Player.Character or Player.CharacterAdded:Wait();
+        if not Player.Character then Player.CharacterAdded:Wait(); end
         if not Player.Character:IsDescendantOf(workspace) then
             Player.Character.AncestryChanged:Wait();
         end
-        StandClone.PrimaryPart:SetNetworkOwner(Player);
+        StandClone.Parent = Player.Character;
+        task.wait();
         --Player:SetAttribute("JoJoStand", true);
+        StandClone.PrimaryPart:SetNetworkOwner(Player);
         init.__root:FindFirstChild("Events"):FindFirstChild("StandInit"):FireClient(Player, true, Stand, StandClone);
     end
 
@@ -294,6 +242,15 @@ end
         return require(init.__root.Util);
     end
 
+    --[=[
+        @within Main
+
+        Gets Animation Module
+    ]=]
+    function init.GetAnimMod(): {}
+        return AnimMod;
+    end
+
 --[[
     System Setup
 --]]
@@ -332,12 +289,6 @@ do
         Events.RegisterEvent("Finisher");
         Events.RegisterEvent("FinisherFinale");
     elseif (RS:IsClient()) then
-        game.Players.LocalPlayer.CharacterAdded:Connect(function()
-            _G.CharAnim = initAnimControl();
-        end)
-        if game.Players.LocalPlayer.Character then
-            _G.CharAnim = initAnimControl();
-        end
         init.Data = {
             LastAttack = 0,
             AttackAnimCount = 1,
@@ -347,6 +298,7 @@ do
         }
 
         task.delay(0, clonePlayerScripts);
+        Events.RegisterEvent("Knockback");
     end
     Events.RegisterEvent("Block");
     Events.RegisterEvent("Attack");

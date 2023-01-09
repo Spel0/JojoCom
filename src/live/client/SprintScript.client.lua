@@ -1,3 +1,5 @@
+if not _G.JojoCombatScripts then repeat task.wait() until _G.JojoCombatScripts end
+local JojoCombat = _G.JojoCombatScripts;
 local CAS = game:GetService"ContextActionService";
 local Player = game.Players.LocalPlayer;
 local RS = game:GetService("RunService");
@@ -17,12 +19,12 @@ local Event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitFo
 _G.IsRunning = false;
 
 CAS:BindAction("Sprint", function(_, inputState)
-    if inputState ~= Enum.UserInputState.Begin then return; end
+    if inputState ~= Enum.UserInputState.Begin or (JojoCombat.Stand and JojoCombat.Stand.UsingAbility) then return; end
     _G.IsRunning = not _G.IsRunning;
     Event:FireServer(_G.IsRunning);
     local character = Player.Character;
     character.Humanoid.WalkSpeed = _G.IsRunning and 28 or 16;
-    if not _G.CharAnim then return; end
+   --[[ if not _G.CharAnim then return; end
     local con; con = RS.Heartbeat:Connect(function()
         if not _G.IsRunning then 
             con:Disconnect(); 
@@ -38,6 +40,6 @@ CAS:BindAction("Sprint", function(_, inputState)
                 _G.CharAnim:StopAnim("Sprint");
             end
         end
-    end)
+    end)--]]
 end, true, Enum.KeyCode.LeftShift);
 CAS:SetTitle("Sprint", "Sprint");

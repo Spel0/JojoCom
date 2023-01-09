@@ -8,11 +8,15 @@ local CAS = game:GetService"ContextActionService";
 local TS = game:GetService"TweenService";
 local RSRootFolder = RepStorage:WaitForChild"JojoCombatScripts";
 local EventsFolder = RepStorage:WaitForChild("Events");
+local CombatModEventFolder = RSRootFolder:WaitForChild"Events";
 
 local sound = Instance.new("Sound", workspace);
 sound.SoundId = "rbxassetid://5326246476";
 game:GetService("ContentProvider"):PreloadAsync({sound});
 
+CombatModEventFolder:WaitForChild("Knockback").OnClientEvent:Connect(function(part, power)
+    JojoCombat.Fire("Knockback", part, power);
+end)
 
 EventsFolder:WaitForChild("TimeStop").OnClientEvent:Connect(function(active, duration)
     local con;

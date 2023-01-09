@@ -42,7 +42,10 @@ local Abilities = {
         if not hum or (TargetData and TargetData.InSpecialAnim) then return; end
         local damage = Abil.Damage*Data.getDamageMult(plr);
         hum:TakeDamage(damage);
-        CombatModEventFolder:FindFirstChild("Attack"):FireClient(plr, args[2], damage)
+        CombatModEventFolder:FindFirstChild("Attack"):FireClient(plr, args[2], damage);
+        if TargetPlayer and TargetData.Block.IsBlocking then
+            CombatModEventFolder:FindFirstChild("Block"):FireClient(TargetPlayer);
+        end
         local PlayerData = Data.getPlayerData(plr);
         if PlayerData.Stand and not PlayerData.Stand.Abilities.Rage.Active then
             PlayerData.DamageDealt += damage;
@@ -64,7 +67,7 @@ local Abilities = {
             Data.applyDamageMult(plr, 1);
             AbilData.Active = true;
             PlayerData.DamageDealt = 0;
-            task.wait(AbilData.ActiveFor);
+            task.wait(AbilData.Duration);
             print("Rage Off")
             Data.applyDamageMult(plr, -1);
             AbilData.Active = false;
@@ -93,6 +96,78 @@ local Abilities = {
                         Animator.Parent = player.Character.Humanoid;
                     end)
                 end
+            end
+        end
+    end,
+    Barrage = function(plr, Ability, args)
+        local StandData = require(StandFolder:FindFirstChild(args[1]).StandData);
+        local PlayerData = Data.getPlayerData(plr);
+        if typeof(args[2]) == "boolean" then
+            local hum = plr.Character.Humanoid;
+            local lastSpeed = hum.WalkSpeed;
+            hum.WalkSpeed = StandData.Abilities[Ability].WalkSpeed;
+            hum:SetStateEnabled(Enum.HumanoidStateType.Jumping, false);
+            local parts = {};
+            local offsetForAnim = {
+                ["Right"] = {
+                    {Vector3.new(1.116, 2.744, -0),Vector3.new(-0.384, 0.744, 0)},
+                    {Vector3.new(2.135, 1.549, -0),Vector3.new(-0.384, 0.744, 0)}
+                },
+                ["Left"] = {
+                    {Vector3.new(-1.183, 2.744, -0),Vector3.new(0.317, 0.744, 0)},
+                    {Vector3.new(-2.162, 1.549, -0),Vector3.new(0.317, 0.744, 0)}
+                }
+            }
+            local StandModel = PlayerData.Stand.Model;
+            for i = 2, 3 do
+                local left = StandModel:FindFirstChild("Left Arm");
+                local right = StandModel:FindFirstChild("Right Arm");
+                local cloneLeft = left:Clone();
+                cloneLeft.Name = string.format("Left Arm_%s", i);
+                cloneLeft.Parent = StandModel;
+                local Motor = Instance.new("Motor6D");
+                Motor.Part0 = StandModel:FindFirstChild("Torso");
+                Motor.Part1 = cloneLeft;
+                Motor.C0 = CFrame.new(offsetForAnim["Left"][i-1][1]);
+                Motor.C1 = CFrame.new(offsetForAnim["Left"][i-1][2]);
+                Motor.Parent = StandModel:FindFirstChild("Torso");
+                table.insert(parts, cloneLeft);
+                table.insert(parts, Motor);
+                local cloneRight = right:Clone();
+                cloneRight.Name = string.format("Right Arm_%s", i);
+                cloneRight.Parent = StandModel;
+                local Motor = Instance.new("Motor6D");
+                Motor.Part0 = StandModel:FindFirstChild("Torso");
+                Motor.Part1 = cloneRight;
+                Motor.C0 = CFrame.new(offsetForAnim["Right"][i-1][1]);
+                Motor.C1 = CFrame.new(offsetForAnim["Right"][i-1][2]);
+                Motor.Parent = StandModel:FindFirstChild("Torso");
+                table.insert(parts, cloneRight);
+                table.insert(parts, Motor);
+            end
+            task.wait(StandData.Abilities[Ability].Duration);
+            hum.WalkSpeed = lastSpeed;
+            hum:SetStateEnabled(Enum.HumanoidStateType.Jumping, true);
+            for _,v in parts do
+                v:Destroy();
+            end
+            table.clear(parts);
+            parts = nil;
+        elseif typeof(args[2]) == "Instance" then
+            local Abil = StandData.Abilities[Ability];
+            local hum = args[2]:FindFirstChild("Humanoid");
+            local TargetPlayer = game.Players:GetPlayerFromCharacter(args[2]);
+            local TargetData = TargetPlayer and Data.getPlayerData(TargetPlayer) or nil;
+            if not hum or (TargetData and TargetData.InSpecialAnim) then return; end
+            local damage = Abil.Damage*Data.getDamageMult(plr);
+            damage *= TargetData and (TargetData.Block.IsBlocking and Abil.BlockNegate or 1) or 1;
+            hum:TakeDamage(damage);
+            CombatModEventFolder:FindFirstChild("Attack"):FireClient(plr, args[2], damage)
+            if TargetPlayer and TargetData.Block.IsBlocking then
+                CombatModEventFolder:FindFirstChild("Block"):FireClient(TargetPlayer);
+            end
+            if PlayerData.Stand and not PlayerData.Stand.Abilities.Rage.Active then
+                PlayerData.DamageDealt += damage;
             end
         end
     end

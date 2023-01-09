@@ -138,6 +138,7 @@ function module:StopAnim(Name:string, fadeTime:number?):boolean
 			key.Track:Stop(fadeTime or 0.1);
 			return true;
 		end
+		return false;
 	end
 	warn("Animation "..Name.." doesn't exist");
 	return false;

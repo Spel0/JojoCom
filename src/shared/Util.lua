@@ -34,7 +34,7 @@ end
     @client
 
     Get the Platform that the Client is playing on
---]=]
+]=]
 function module.GetPlatform()
     if UIS.KeyboardEnabled and UIS.MouseEnabled and not UIS.TouchEnabled then
         return "PC";
@@ -43,6 +43,44 @@ function module.GetPlatform()
     else
         return "Console";
     end
+end
+
+--[=[
+    @within Util
+    @client
+
+    Make a Deep Copy of a Table
+]=]
+function module.DeepCopy(original:{})
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            v = module.DeepCopy(v)
+        end
+        copy[k] = v
+    end
+    return copy
+end
+
+--[=[
+    @within Util
+    @client
+
+    For use with AnimController module
+    Format:
+    ```lua
+    {Anim1 = 123456, Anim2 = "rbxassetid://123456", Anim3 = RepStorage.Animations.Anim3}
+    ```
+]=]
+function module.PackToAnimList(original:{})
+    local toReturn = {};
+    for i,v in original do
+        table.insert(toReturn, {
+            Name = i,
+            ID = v
+        })
+    end
+    return toReturn
 end
 
 return module;

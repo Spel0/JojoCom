@@ -1,6 +1,7 @@
 local RS = game:GetService"ReplicatedStorage";
 local RSRootFolder = RS:WaitForChild"JojoCombatScripts";
 local StandsFolder = RSRootFolder.Stands;
+local CombatMod = require(RSRootFolder.JojoCombatMod);
 local EventsHandler = require(RSRootFolder.EventsHandler);
 local ModSettings = require(RSRootFolder.ModSettings);
 local Data = require(RSRootFolder.Data);
@@ -33,25 +34,28 @@ EventsFolder.AttackFunc.OnServerInvoke = function(plr, target:Model, withStand:b
         local params = {plr, target, damage*PlayerData.DamageMult, blocking};
         EventsHandler.FireEvent("Attack", unpack(params));
         EventsFolder.Attack:FireClient(unpack(params));
+        if targetPlayer and targetData.Block.IsBlocking then
+            EventsFolder:FindFirstChild("Block"):FireClient(targetPlayer);
+        end
         PlayerData.LastAttack = os.clock();
         return true;
     end
     return false;
 end
 
-EventsFolder.Block.OnServerEvent:Connect(function(plr)
+EventsFolder.Block.OnServerEvent:Connect(function(plr, active)
     local PlayerData = Data.getPlayerData(plr);
     if not PlayerData.IsDead then
-        if not PlayerData.Block.IsBlocking and os.clock() - PlayerData.Block.LastBlock > ModSettings.BlockCooldown then
+        if not PlayerData.Block.IsBlocking and os.clock() - PlayerData.Block.LastBlock > ModSettings.BlockCooldown and active then
             PlayerData.Block.IsBlocking = true;
-            EventsHandler.FireEvent("Block", plr, true);
-        elseif PlayerData.Block.IsBlocking then
-            PlayerData.Block.LastBlock = os.clock();
-            PlayerData.Block.IsBlocking = false;
-            EventsHandler.FireEvent("Block", plr, false);
+            task.wait(ModSettings.BlockWearOff);
         end
+        PlayerData.Block.LastBlock = os.clock();
+        PlayerData.Block.IsBlocking = false;
     end
 end)
+
+local abilTaskTable = {};
 
 EventsFolder.Ability.OnServerEvent:Connect(function(plr, Ability:string, ...)
     local PlayerData = Data.getPlayerData(plr);
@@ -60,7 +64,16 @@ EventsFolder.Ability.OnServerEvent:Connect(function(plr, Ability:string, ...)
         local abil = PlayerData.Stand.Abilities[Ability];
         if abil ~= nil and (abil.Cooldown == nil or os.clock() - (abil.LastUsed or 0) > abil.Cooldown) then
             EventsHandler.FireEvent("Ability", plr, Ability, ...);
-            abil.LastUsed = os.clock();
+            if not abilTaskTable[abil] or coroutine.status(abilTaskTable[abil]) == "dead" then
+                abilTaskTable[abil] = coroutine.create(function() 
+                    abil.LastUsed = os.clock();
+                end)
+                task.delay(abil.Duration or 0, abilTaskTable[abil]);
+            end
         end
     end
+end)
+
+CombatMod.GetBlockSignal():Connect(function(plr)
+    EventsFolder:FindFirstChild("Block"):FireClient(plr);
 end)

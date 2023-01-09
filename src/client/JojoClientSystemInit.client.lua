@@ -3,6 +3,7 @@ local RepStorage = game:GetService"ReplicatedStorage";
 local RSRootFolder = RepStorage:WaitForChild"JojoCombatScripts";
 local EventsFolder = RSRootFolder:WaitForChild("Events");
 local RS = game:GetService"RunService";
+local Util = require(RSRootFolder.Util);
 
 --[[local Stand = require(RSRootFolder.Stand);
 local StandsData = require(RSRootFolder.StandsData);
@@ -19,15 +20,44 @@ end)--]]
 _G.JojoCombatScripts = require(RSRootFolder.JojoCombatMod);
 _G.JojoCombatScripts.Events = require(RSRootFolder.EventsHandler);
 
+local function initAnimControl()
+    local Character = Player.Character or Player.CharacterAdded:Wait();
+    local animator = Character:WaitForChild("Humanoid"):WaitForChild("Animator");
+    local anims = {Death = "rbxassetid://11843234866", Sprint = "11978499073", Idle = "12014000608", 
+    Attack1 = "12014008263", Attack2 = "12014012047", Attack3 = "12014016019", Attack4 = "12014028461",
+    Walk = "12071030047", TeleportAbil = "12071055741", ["Time Stop"] = 12071670672, Rage = 12071836394,
+    Jump = 12103648246, Block = 12103825878, BlockHit = 12103852150, ["Roll Front"] = 12103943444,
+    ["Roll Back"] = 12103947758, ["Roll Right"] = 12103950202, ["Roll Left"] = 12103952824};
+    anims = Util.PackToAnimList(anims);
+    return _G.JojoCombatScripts:GetAnimMod().new(animator, anims);
+end
+
 local function onCharacterAdded(char)
-    repeat task.wait() until _G.CharAnim
+    _G.CharAnim = initAnimControl();
     local hum = char:WaitForChild("Humanoid");
     local con;
     con = RS.Heartbeat:Connect(function()
-        if _G.CharAnim:IsAnimPlaying("Idle") and ((char.Humanoid.MoveDirection.Magnitude > 0 and _G.GlobalFunc.IsOnGround(char)) or (not _G.GlobalFunc.IsOnGround(char) and hum.Jumping)) then
+        if _G.GlobalFunc.IsOnGround(char) then
+            if hum.MoveDirection.Magnitude > 0 then
+                _G.CharAnim:StopAnim("Idle");
+                if _G.IsRunning and not _G.CharAnim:IsAnimPlaying("Sprint") then
+                    _G.CharAnim:StopAnim("Walk");
+                    _G.CharAnim:PlayAnim("Sprint");
+                elseif not _G.IsRunning and not _G.CharAnim:IsAnimPlaying("Walk") then
+                    _G.CharAnim:StopAnim("Sprint");
+                    _G.CharAnim:PlayAnim("Walk");
+                end
+            else
+                if not _G.CharAnim:IsAnimPlaying("Idle") then
+                    _G.CharAnim:PlayAnim("Idle");
+                end
+                _G.CharAnim:StopAnim("Walk");
+                _G.CharAnim:StopAnim("Sprint");
+            end
+        else
+            _G.CharAnim:StopAnim("Walk");
+            _G.CharAnim:StopAnim("Sprint");
             _G.CharAnim:StopAnim("Idle");
-        elseif not _G.CharAnim:IsAnimPlaying("Idle") and char.Humanoid.MoveDirection.Magnitude == 0 and _G.GlobalFunc.IsOnGround(char) then
-            _G.CharAnim:PlayAnim("Idle");
         end
     end)
     hum.Died:Connect(function()
@@ -52,6 +82,13 @@ local function onCharacterAdded(char)
             anim:AdjustSpeed(0);
             anim.TimePosition = anim.Length-0.1;
         end)
+    end)
+    hum.StateChanged:Connect(function(old, new)
+        if new == Enum.HumanoidStateType.Jumping and not _G.CharAnim:IsAnimPlaying("Jump") then
+            _G.CharAnim:PlayAnim("Jump");
+        elseif (old == Enum.HumanoidStateType.Jumping or old == Enum.HumanoidStateType.Freefall) and new == Enum.HumanoidStateType.Landed and _G.CharAnim:IsAnimPlaying("Jump") then
+            _G.CharAnim:StopAnim("Jump");
+        end
     end)
     workspace:WaitForChild("PlayersStuff"):WaitForChild(Player.Name):WaitForChild("FinisherPart"):Destroy();
 end

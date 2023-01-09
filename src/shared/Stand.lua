@@ -30,16 +30,27 @@ function stand.new(Stand:Model, Anims:AnimMod.animList, Abilities:{}, HoverOffse
         __primaryPart = PrimaryPart,
         __offset = HoverOffset or CFrame.new(2.5, 2.5, 3),
         Alive = true,
-        Abilities = Abilities
+        Abilities = Abilities,
+        UsingAbility = false
     }, stand);
 
-    local vel = Instance.new("BodyVelocity"); --Make Stand stay in place
-	vel.Parent = self.__stand.PrimaryPart;
-	vel.MaxForce = Vector3.new(math.huge, math.huge, math.huge);
-	vel.Velocity = Vector3.new(0, 0, 0);
+    local Task = coroutine.create(function()
+            --[[local vel = Instance.new("BodyVelocity"); --Make Stand stay in place
+            vel.Parent = self.__stand.PrimaryPart;
+            vel.MaxForce = Vector3.new(math.huge, math.huge, math.huge);
+            vel.Velocity = Vector3.new(0, 0, 0);--]]
 
-    self.__animmod:PlayAnim("Idle");
-    task.spawn(self.__update, self);
+            self.__animmod:PlayAnim("Idle");
+            task.spawn(self.__update, self);
+    end)
+    
+    if not self.__stand:IsDescendantOf(workspace) then
+        self.__stand.AncestryChanged:Once(function()
+            task.spawn(Task);
+        end)
+    else
+        task.spawn(Task);
+    end
 
     return self;
 end
@@ -58,12 +69,17 @@ end
     @within Stand
     @client
 
-    Use Stand Ability if it Exists and Cooldown isn't in effect
+    Use Stand Ability if it Exists and Cooldown isn't in Effect with Unlimited Additional Checks as an Optional Parameters
 ]=]
-function stand:UseAbility(Name:string)
+function stand:UseAbility(Name:string, ...)
+    if table.find({...}, true) then return; end
     if self.Abilities and self.Abilities[Name] then
         if not self.Abilities[Name].Cooldown or (self.Abilities[Name].Cooldown and os.clock() - (self.Abilities[Name].LastUsed or 0) > self.Abilities[Name].Cooldown) then
             JojoCombat.Fire("Ability", self.__stand.Name, Name);
+            self.UsingAbility = true;
+            task.delay(self.Abilities[Name].Duration or 0, function()
+                self.UsingAbility = false;
+            end)
             self.Abilities[Name].LastUsed = os.clock();
         end
     end

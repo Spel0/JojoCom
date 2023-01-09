@@ -5,33 +5,22 @@ local RSRootFolder = RepStorage:WaitForChild"JojoCombatScripts";
 local EventsFolder = RSRootFolder:WaitForChild("Events");
 local EventsHandler = require(RSRootFolder.EventsHandler)
 local StandMod = require(RSRootFolder.Stand);
-
-local function PackToAnimList(Table)
-    local toReturn = {};
-    for i,v in Table do
-        table.insert(toReturn, {
-            Name = i,
-            ID = v
-        })
-    end
-    return toReturn
-end
+local Util = require(RSRootFolder.Util);
 
 EventsFolder:WaitForChild("StandInit").OnClientEvent:Connect(function(active:boolean, Name:string?, Model:Model?)
-    local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait();
+    local char = Player.Character or Player.CharacterAdded:Wait();
     active = active and true or false;
     if _G.JojoCombatScripts.Stand ~= nil and _G.JojoCombatScripts.Stand.Alive then
         _G.JojoCombatScripts.Stand:Destroy();
-    end
-    local hoverOffset:CFrame;
-    if Name == "The World" then
-        hoverOffset = CFrame.new(2, 1, 2);
     end
     if active then
         local StandFolder = RSRootFolder.Stands:FindFirstChild(Name);
         assert(StandFolder, "Invalid Stand");
         local StandData = require(StandFolder.StandData);
-        _G.JojoCombatScripts.Stand = StandMod.new(Model, PackToAnimList(StandData["Anims"]), StandData["Abilities"], hoverOffset, char:WaitForChild("HumanoidRootPart"))
+        if not Model:IsDescendantOf(Player.Character) then
+            Model.Parent = Player.Character;
+        end
+        _G.JojoCombatScripts.Stand = StandMod.new(Model, Util.PackToAnimList(StandData["Anims"]), Util.DeepCopy(StandData["Abilities"]), StandData.HoverOffset, char:WaitForChild("HumanoidRootPart"))
     else
         _G.JojoCombatScripts.Stand = nil;
     end
@@ -49,12 +38,19 @@ repeat task.wait() until _G.JojoCombatScripts ~= nil
 local CombatMod = _G.JojoCombatScripts;
 local ModEvents = CombatMod.Events;
 
+EventsFolder:WaitForChild("Block").OnClientEvent:Connect(function()
+    if _G.CharAnim and CombatMod.Data.Blocking and _G.CharAnim:IsAnimPlaying("Block") then
+        _G.CharAnim:PlayAnim("BlockHit");
+    end
+end)
+
 EventsFolder:WaitForChild("Ability").OnClientEvent:Connect(function(Stand:Model, Ability:string)
     ModEvents.FireSignal("Ability", Stand, Ability);
 end)
 
-ModEvents.GetEventSignal("Block"):Connect(function()
-    EventsFolder:FindFirstChild("Block"):FireServer();
+ModEvents.GetEventSignal("Block"):Connect(function(active)
+    CombatMod.Data.Blocking = active;
+    EventsFolder:FindFirstChild("Block"):FireServer(active);
 end)
 
 ModEvents.GetEventSignal("Attack"):Connect(function(Target:Model, Stand:boolean)
@@ -63,4 +59,11 @@ ModEvents.GetEventSignal("Attack"):Connect(function(Target:Model, Stand:boolean)
     EventsHandler.FireEvent("AttackCallback", res);
     RS.Heartbeat:Wait();
     EventsHandler.DestroyEvent("AttackCallback");
+end)
+
+ModEvents.GetEventSignal("Knockback"):Connect(function(part, power)
+    local HRP = Player.Character.HumanoidRootPart;
+    local dir = (HRP.Position - part.Position).unit;
+    dir = Vector3.new(dir.X, 0, dir.Z);
+    Player.Character.HumanoidRootPart:ApplyImpulse(dir*HRP.AssemblyMass*power);
 end)

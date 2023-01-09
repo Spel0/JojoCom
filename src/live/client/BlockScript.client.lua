@@ -8,16 +8,16 @@ local last = os.clock();
 
 local function action(_, inputState)
     if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown then return; end
-    JojoCombat.Fire("Block");
-    JojoCombat.Data.Blocking = not JojoCombat.Data.Blocking;
+    JojoCombat.Fire("Block", not JojoCombat.Data.Blocking);
     last = os.clock();
     if not _G.CharAnim then return; end
     if JojoCombat.Data.Blocking then
         local anim = _G.CharAnim:PlayAnim("Block");
         if anim then
-            anim.Stopped:Connect(function()
-                anim:Play();
+            anim.Stopped:Once(function()
+                if not JojoCombat.Data.Blocking then return; end
                 anim:AdjustSpeed(0);
+                anim:Play();
                 anim.TimePosition = anim.Length;
             end)
         end

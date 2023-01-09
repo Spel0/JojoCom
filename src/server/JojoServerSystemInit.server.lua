@@ -30,11 +30,11 @@ local function initializePlayer(plr)
         end)
 
         --Setting up the Proxy Prompt Finisher
-        for i,v in char:GetDescendants() do
+        --[[for i,v in char:GetDescendants() do
             if v:IsA("BasePart") then
                 PS:SetPartCollisionGroup(v, "Players");
             end
-        end
+        end--]]
         local FinisherProxyPart = Instance.new("Part");
         FinisherProxyPart.Anchored = true;
         FinisherProxyPart.Transparency = 1;
