@@ -42,6 +42,7 @@ function interface.getPlayerData(plr:Player)
             Character = plr.Character or nil,
             IsDead = false,
             Invincible = false,
+            Stunned = false,
             Stand = {
                 Model = nil,
                 Original = nil,

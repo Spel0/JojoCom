@@ -20,7 +20,7 @@ EventsFolder.AttackFunc.OnServerInvoke = function(plr, target:Model, withStand:b
         targetData = Data.getPlayerData(targetPlayer);
         if targetData.InSpecialAnim or targetData.Invincible then return; end
     end
-    if not PlayerData.IsDead and os.clock() - PlayerData.LastAttack > ModSettings.AttackCooldown then
+    if not PlayerData.IsDead and not PlayerData.Stunned and os.clock() - PlayerData.LastAttack > ModSettings.AttackCooldown then
         local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {plr.Character, target};
         local targetHit = target:FindFirstChild("HumanoidRootPart") or target.PrimaryPart;
         local HRP = plr.Character.HumanoidRootPart;
@@ -49,7 +49,7 @@ end
 
 EventsFolder.Block.OnServerEvent:Connect(function(plr, active)
     local PlayerData = Data.getPlayerData(plr);
-    if not PlayerData.IsDead then
+    if not PlayerData.IsDead and not PlayerData.Stunned then
         if not PlayerData.Block.IsBlocking and os.clock() - PlayerData.Block.LastBlock > ModSettings.BlockCooldown and active then
             PlayerData.Block.IsBlocking = true;
             task.wait(ModSettings.BlockWearOff);
@@ -64,7 +64,7 @@ local abilTaskTable = {};
 EventsFolder.Ability.OnServerEvent:Connect(function(plr, Ability:string, ...)
     local PlayerData = Data.getPlayerData(plr);
     local stand = StandsFolder:FindFirstChild(PlayerData.Stand.Name);
-    if not PlayerData.IsDead and stand ~= nil and PlayerData.Stand.Model ~= nil then
+    if not PlayerData.IsDead and not PlayerData.Stunned and stand ~= nil and PlayerData.Stand.Model ~= nil then
         local abil = PlayerData.Stand.Abilities[Ability];
         if abil ~= nil and (abil.Cooldown == nil or os.clock() - (abil.LastUsed or 0) > abil.Cooldown) then
             if abil.Type == "Damage" then

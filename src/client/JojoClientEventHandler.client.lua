@@ -49,11 +49,13 @@ EventsFolder:WaitForChild("Ability").OnClientEvent:Connect(function(Stand:Model,
 end)
 
 ModEvents.GetEventSignal("Block"):Connect(function(active)
+    if CombatMod.Data.Stunned then return; end
     CombatMod.Data.Blocking = active;
     EventsFolder:FindFirstChild("Block"):FireServer(active);
 end)
 
 ModEvents.GetEventSignal("Attack"):Connect(function(Target:Model, Stand:boolean)
+    if CombatMod.Data.Stunned then return; end
     EventsHandler.RegisterEvent("AttackCallback");
     local res = EventsFolder:FindFirstChild("AttackFunc"):InvokeServer(Target, Stand);
     EventsHandler.FireEvent("AttackCallback", res);

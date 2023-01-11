@@ -1,3 +1,5 @@
+if not _G.JojoCombatScripts then repeat task.wait() until _G.JojoCombatScripts end
+local JojoCombat = _G.JojoCombatScripts;
 local CAS = game:GetService"ContextActionService";
 local Player = game.Players.LocalPlayer;
 
@@ -5,7 +7,7 @@ local cooldown = 3;
 local last = os.clock();
 local multiplier = 150;
 CAS:BindAction("Dash", function(_, inputState)
-    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown then return; end
+    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown or JojoCombat.Stunned or JojoCombat.InSpecialAnim or not _G.GlobalFunc.IsAlive(Player.Character) then return; end
     local HRP = Player.Character.HumanoidRootPart;
     local MoveDir = Player.Character.Humanoid.MoveDirection;
     if MoveDir == Vector3.new() then return; end

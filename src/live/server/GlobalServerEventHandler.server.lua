@@ -40,7 +40,7 @@ local Abilities = {
         if TargetPlayer then
             TargetData = Data.getPlayerData(TargetPlayer);
         end
-        if not hum or (TargetData and TargetData.InSpecialAnim) then return; end
+        if not hum or (TargetData and (TargetData.InSpecialAnim or TargetData.Invincible)) then return; end
         local damage = Abil.Damage*Data.getDamageMult(plr);
         hum:TakeDamage(damage);
         CombatModEventFolder:FindFirstChild("Attack"):FireClient(plr, args[2], damage);
@@ -82,18 +82,18 @@ local Abilities = {
         for _,player in game.Players:GetPlayers() do
             if (plr.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= AbilData.Distance then
                 local localPlayer = plr == player;
-                local TargetData = Data.getPlayerData(plr);
+                local TargetData = Data.getPlayerData(player);
                 TimeStopEvent:FireClient(player, not localPlayer, AbilData.Duration);
                 game.Players.RespawnTime = AbilData.Duration + 3;
                 if not localPlayer then
                     player.Character.HumanoidRootPart.Anchored = true;
-                    TargetData.IsDead = true;
+                    TargetData.Stunned = true;
                     local Animator = player.Character.Humanoid.Animator;
                     Animator.Parent = nil;
                     task.delay(AbilData.Duration, function()
                         game.Players.RespawnTime = 3;
+                        TargetData.Stunned = false;
                         if player.Character.Humanoid.Health ~= 0 then
-                            TargetData.IsDead = false;
                             player.Character.HumanoidRootPart.Anchored = false;
                         end
                         Animator.Parent = player.Character.Humanoid;
@@ -164,7 +164,7 @@ local Abilities = {
             local hum = args[2]:FindFirstChild("Humanoid");
             local TargetPlayer = game.Players:GetPlayerFromCharacter(args[2]);
             local TargetData = TargetPlayer and Data.getPlayerData(TargetPlayer) or nil;
-            if not hum or (TargetData and TargetData.InSpecialAnim) then return; end
+            if not hum or (TargetData and (TargetData.InSpecialAnim or TargetData.Invincible)) then return; end
             local damage = Abil.Damage*Data.getDamageMult(plr);
             damage *= TargetData and (TargetData.Block.IsBlocking and Abil.BlockNegate or 1) or 1;
             hum:TakeDamage(damage);

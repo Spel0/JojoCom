@@ -21,7 +21,7 @@ end)
 EventsFolder:WaitForChild("TimeStop").OnClientEvent:Connect(function(active, duration)
     local con;
     if active then
-        JojoCombat.Data.Attacking = true;
+        JojoCombat.Data.Stunned = true;
         local last = Player.Character.Humanoid.WalkSpeed;
         Player.Character.Humanoid.WalkSpeed = 0;
         local Animator = Player.Character.Humanoid.Animator;
@@ -36,7 +36,7 @@ EventsFolder:WaitForChild("TimeStop").OnClientEvent:Connect(function(active, dur
             for _,v in Animator:GetPlayingAnimationTracks() do
                 v:AdjustSpeed(1);
             end
-            JojoCombat.Data.Attacking = false;
+            JojoCombat.Data.Stunned = false;
             Player.Character.Humanoid.WalkSpeed = last;
         end)
     end

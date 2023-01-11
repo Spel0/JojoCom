@@ -14,7 +14,7 @@ return {
 		["Time Stop"] = {
 			Type = "Util",
 			Cooldown = 60,
-			Distance = 50,
+			Distance = 80,
 			Duration = 10,
 			Anim = true,
 			BindKey = Enum.KeyCode.H
