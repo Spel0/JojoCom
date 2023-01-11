@@ -81,7 +81,7 @@ local function initializePlayer(plr)
             local Finisher = triggerData.Stand.Finisher[math.random(1, #triggerData.Stand.Finisher)];
             local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {trigger.Character, target.Character};
             local res = workspace:Raycast(trigger.Character.Head.Position, (target.Character.Head.Position - trigger.Character.Head.Position).Unit * (trigger.Character.Head.Position - target.Character.Head.Position).Magnitude, params);
-            if res then return; end
+            if res or not target.Character.Humanoid:FindFirstChild("Animator") then return; end
             Events.FireEvent("Finisher", trigger, target, Finisher);
             Proxy:Destroy();
             CombatMod.MakePlayerInvincible(trigger, true);
