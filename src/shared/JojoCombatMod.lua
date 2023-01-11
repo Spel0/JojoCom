@@ -310,7 +310,8 @@ do
 			Attacking = false,
 			Blocking = false,
 			DamageDealt = 0,
-            Stunned = false
+            Stunned = false,
+            AllowSprint = true
 		}
 
 		task.delay(0, clonePlayerScripts)

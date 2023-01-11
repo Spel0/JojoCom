@@ -19,7 +19,7 @@ local Event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitFo
 _G.IsRunning = false;
 
 CAS:BindAction("Sprint", function(_, inputState)
-    if inputState ~= Enum.UserInputState.Begin or (JojoCombat.Stand and JojoCombat.Stand.UsingAbility) or JojoCombat.Stunned then return; end
+    if inputState ~= Enum.UserInputState.Begin or not JojoCombat.Data.AllowSprint or JojoCombat.Data.Stunned then return; end
     _G.IsRunning = not _G.IsRunning;
     Event:FireServer(_G.IsRunning);
     local character = Player.Character;

@@ -58,7 +58,7 @@ local Abilities = {
         JojoCombat.Stand:PlayAnim("Time Stop");
         EventsFolder:FindFirstChild("Ability"):FireServer("Time Stop", Stand);
     end,
-    
+
     ["Barrage"] = function(Stand, StandData)
         if not StandData.Abilities.Barrage then return; end
         local Character = Player.Character;
@@ -75,6 +75,7 @@ local Abilities = {
             end
             Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true);
             Character.Humanoid.WalkSpeed = lastSpeed;
+            JojoCombat.Data.AllowSprint = true;
         end)
         EventsFolder:FindFirstChild("Ability"):FireServer("Barrage", Stand, true);
         HitboxMod.new((HRP.CFrame*CFrame.new(0,0, -(distance/2))).Position, (HRP.CFrame*CFrame.new(0, 0, -99999)).Position, HRP.Size.X*2, HRP.Size.Y*2, distance, duration, {Character, StandModel}):registerHit(function(Model)
@@ -82,6 +83,7 @@ local Abilities = {
         end, false, 0.2):setFollowTarget(StandModel.PrimaryPart, Vector3.new(0, 0, -(distance/2)));
         Character.Humanoid.WalkSpeed = StandData.Abilities.Barrage.WalkSpeed;
         Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false);
+        JojoCombat.Data.AllowSprint = false;
         return duration;
     end
 }

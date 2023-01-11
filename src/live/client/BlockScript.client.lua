@@ -7,7 +7,7 @@ local cooldown = ModSettings.BlockCooldown;
 local last = os.clock();
 
 local function action(_, inputState)
-    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown or (JojoCombat.Data.Stunned and not JojoCombat.Data.Blocing) then return; end
+    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown or (JojoCombat.Data.Stunned and not JojoCombat.Data.Blocking) then return; end
     JojoCombat.Fire("Block", not JojoCombat.Data.Blocking);
     last = os.clock();
     if not _G.CharAnim then return; end

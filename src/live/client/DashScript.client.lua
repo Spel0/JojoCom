@@ -7,7 +7,7 @@ local cooldown = 3;
 local last = os.clock();
 local multiplier = 150;
 CAS:BindAction("Dash", function(_, inputState)
-    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown or JojoCombat.Stunned or JojoCombat.InSpecialAnim or not _G.GlobalFunc.IsAlive(Player.Character) then return; end
+    if inputState ~= Enum.UserInputState.Begin or os.clock() - last < cooldown or JojoCombat.Data.Stunned or JojoCombat.Data.InSpecialAnim or not JojoCombat.Data.AllowSprint or not _G.GlobalFunc.IsAlive(Player.Character) then return; end
     local HRP = Player.Character.HumanoidRootPart;
     local MoveDir = Player.Character.Humanoid.MoveDirection;
     if MoveDir == Vector3.new() then return; end
