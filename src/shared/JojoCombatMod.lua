@@ -11,118 +11,136 @@
     Initializes the whole system and exposes methods to control it
 ]=]
 local init = {}
-init.__root = game:GetService("ReplicatedStorage"):FindFirstChild("JojoCombatScripts");
-assert(init.__root, "Couldn't find root folder for the system, please ensure that the system folder is located in Replicated Storage");
-init.Events = require(script.Parent.EventsHandler);
+init.__root = game:GetService("ReplicatedStorage"):FindFirstChild("JojoCombatScripts")
+assert(
+	init.__root,
+	"Couldn't find root folder for the system, please ensure that the system folder is located in Replicated Storage"
+)
+init.Events = require(script.Parent.EventsHandler)
 init.Data = require(script.Parent.Data)
 
-local RS = game:GetService"RunService";
-local AnimMod = require(script.Parent.Dependencies.AnimController);
-local Events = init.Events;
-local Data = init.Data;
-local Util = require(init.__root.Util);
+local RS = game:GetService("RunService")
+local AnimMod = require(script.Parent.Dependencies.AnimController)
+local Events = init.Events
+local Data = init.Data
+local Util = require(init.__root.Util)
 
 local function cloneServerScripts()
-    local scriptFolder = Instance.new("Folder");
-    scriptFolder.Name = "JojoCombatScripts";
-    scriptFolder.Parent = game:GetService("ServerScriptService");
-    for _,v in init.__root.serverScripts:GetChildren() do
-        if v:IsA("Script") then
-            local clone = v:Clone();
-            clone.Parent = scriptFolder
-        end
-    end
+	local scriptFolder = Instance.new("Folder")
+	scriptFolder.Name = "JojoCombatScripts"
+	scriptFolder.Parent = game:GetService("ServerScriptService")
+	for _, v in init.__root.serverScripts:GetChildren() do
+		if v:IsA("Script") then
+			local clone = v:Clone()
+			clone.Parent = scriptFolder
+		end
+	end
 end
 
 local function clonePlayerScripts()
-    local plr = game.Players.LocalPlayer;
-    local scriptFolder = Instance.new("Folder");
-    scriptFolder.Name = "JojoCombatScripts";
-    scriptFolder.Parent = plr:WaitForChild("PlayerScripts");
+	local plr = game.Players.LocalPlayer
+	local scriptFolder = Instance.new("Folder")
+	scriptFolder.Name = "JojoCombatScripts"
+	scriptFolder.Parent = plr:WaitForChild("PlayerScripts")
 
-    for _,v in init.__root.clientScripts:GetChildren() do
-        if v:IsA("LocalScript") then
-            local clone = v:Clone();
-            clone.Parent = plr:FindFirstChild("PlayerScripts") or plr:WaitForChild("PlayerScripts");
-        end
-    end
+	for _, v in init.__root.clientScripts:GetChildren() do
+		if v:IsA("LocalScript") then
+			local clone = v:Clone()
+			clone.Parent = plr:FindFirstChild("PlayerScripts") or plr:WaitForChild("PlayerScripts")
+		end
+	end
 end
 
 --[[ 
     Methods
 --]]
 if RS:IsServer() then
-
-    --[=[
+	--[=[
         @within Main
         @server
 
         Summons a Stand and automatically tells the player to initiate and control it
     ]=]
-    function init.SummonStand(Player:Player, Stand:string)
-        local StandData = require(init.__root.Stands:FindFirstChild(Stand).StandData);
-        local Model = StandData.Model
-        assert(Model.PrimaryPart, "Please specify a primary part of a Stand");
-        Model.Archivable = true;
-        local StandClone = Model:Clone();
-        if StandClone:FindFirstChild("Humanoid") ~= nil and StandClone.Humanoid:FindFirstChildOfClass("Animator") == nil then
-            Instance.new("Animator", StandClone.Humanoid);
-        end
-        local PlayerData = Data.getPlayerData(Player);
-        PlayerData.Stand.Model = StandClone;
-        PlayerData.Stand.Original = Model;
-        PlayerData.Stand.Name = Stand;
-        PlayerData.Stand.Abilities = Util.DeepCopy(StandData.Abilities);
-        for _,v in PlayerData.Stand.Abilities do
-            v["LastUsed"] = 0;
-        end
-        PlayerData.Stand.Finisher = StandData.Finisher;
-        --StandClone.Name = "JoJoStand";
-        if not Player.Character then Player.CharacterAdded:Wait(); end
-        if not Player.Character:IsDescendantOf(workspace) then
-            Player.Character.AncestryChanged:Wait();
-        end
-        StandClone.Parent = Player.Character;
-        task.wait();
-        --Player:SetAttribute("JoJoStand", true);
-        StandClone.PrimaryPart:SetNetworkOwner(Player);
-        init.__root:FindFirstChild("Events"):FindFirstChild("StandInit"):FireClient(Player, true, Stand, StandClone);
-    end
+	function init.SummonStand(Player: Player, Stand: string)
+		local StandData = require(init.__root.Stands:FindFirstChild(Stand).StandData)
+		local Model = StandData.Model
+		assert(Model.PrimaryPart, "Please specify a primary part of a Stand")
+		Model.Archivable = true
+		local StandClone = Model:Clone()
+		if
+			StandClone:FindFirstChild("Humanoid") ~= nil
+			and StandClone.Humanoid:FindFirstChildOfClass("Animator") == nil
+		then
+			Instance.new("Animator", StandClone.Humanoid)
+		end
+		for _, v in StandClone:GetDescendants() do
+			if v:IsA("BasePart") then
+				v.Massless = true
+			end
+		end
+		if not StandClone.PrimaryPart:FindFirstChildOfClass("BodyVelocity") then
+			local Velo = Instance.new("BodyVelocity")
+			Velo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+			Velo.Velocity = Vector3.new()
+			Velo.Parent = StandClone.PrimaryPart
+		end
+		local PlayerData = Data.getPlayerData(Player)
+		PlayerData.Stand.Model = StandClone
+		PlayerData.Stand.Original = Model
+		PlayerData.Stand.Name = Stand
+		PlayerData.Stand.Abilities = Util.DeepCopy(StandData.Abilities)
+		for _, v in PlayerData.Stand.Abilities do
+			v["LastUsed"] = 0
+		end
+		PlayerData.Stand.Finisher = StandData.Finisher
+		--StandClone.Name = "JoJoStand";
+		if not Player.Character then
+			Player.CharacterAdded:Wait()
+		end
+		if not Player.Character:IsDescendantOf(workspace) then
+			Player.Character.AncestryChanged:Wait()
+		end
+		StandClone.Parent = Player.Character
+		task.wait()
+		--Player:SetAttribute("JoJoStand", true);
+		StandClone.PrimaryPart:SetNetworkOwner(Player)
+		init.__root:FindFirstChild("Events"):FindFirstChild("StandInit"):FireClient(Player, true, Stand, StandClone)
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
         Removes the Player Stand
     ]=]
-    function init.RemoveStand(Player:Player)
-        if Data.getPlayerData(Player).Stand.Model ~= nil then
-            init.__root:FindFirstChild("Events"):FindFirstChild("StandInit"):FireClient(Player, false);
-            table.clear(Data.getPlayerData(Player).Stand);
-        end
-    end
+	function init.RemoveStand(Player: Player)
+		if Data.getPlayerData(Player).Stand.Model ~= nil then
+			init.__root:FindFirstChild("Events"):FindFirstChild("StandInit"):FireClient(Player, false)
+			table.clear(Data.getPlayerData(Player).Stand)
+		end
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
         Gets the Player Stand Model or nil if none is found
     ]=]
-    function init.GetStand(Player:Player): Model
-        return Data.getPlayerData(Player).Stand.Model;
-    end
+	function init.GetStand(Player: Player): Model
+		return Data.getPlayerData(Player).Stand.Model
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
         Gets the folder that the module is located in
     ]=]
-    function init.GetModFolder(): Folder
-        return init.__root;
-    end
+	function init.GetModFolder(): Folder
+		return init.__root
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
@@ -138,82 +156,79 @@ if RS:IsServer() then
             end)
         ```
     ]=]
-    function init.GetFinisherSignal(): (Events.Signal, Events.Signal)
-        return Events.GetEventSignal("Finisher"), Events.GetEventSignal("FinisherFinale");
-    end
+	function init.GetFinisherSignal(): (Events.Signal, Events.Signal)
+		return Events.GetEventSignal("Finisher"), Events.GetEventSignal("FinisherFinale")
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
         Gets Player Data of a particular player
-    --]=]
-    function init.GetPlayerData(plr:Player): Data.PlayerData
-        return Data.getPlayerData(plr);
-    end
+    ]=]
+	function init.GetPlayerData(plr: Player): Data.PlayerData
+		return Data.getPlayerData(plr)
+	end
 
-
-    --[=[
+	--[=[
         @within Main
         @server
 
         Gets Data Module
-    --]=]
-    function init.GetDataMod(): {}
-        return Data;
-    end
+    ]=]
+	function init.GetDataMod(): {}
+		return Data
+	end
 
-    --[=[
+	--[=[
         @within Main
         @server
 
         Sets a player invincible status in the Player Data
     ]=]
-    function init.MakePlayerInvincible(plr:Player, active:boolean)
-        Data.getPlayerData(plr).Invincible = active;
-    end
-
+	function init.MakePlayerInvincible(plr: Player, active: boolean)
+		Data.getPlayerData(plr).Invincible = active
+	end
 end
 
- --[=[
+--[=[
         @within Main
 
         Gets Block Event Signal which passes a boolean argument to indicate if Block is activated or not
         ```lua
             _G.JojoCombatMod.GetBlockSignal():Connect( (Active:boolean)=>() )
         ```
-    ]=]
-    function init.GetBlockSignal()
-        return Events.GetEventSignal("Block");
-    end
+]=]
+function init.GetBlockSignal()
+	return Events.GetEventSignal("Block")
+end
 
-    --[=[
+--[=[
         @within Main
 
         Gets Attack Event Signal
-    ]=]
-    function init.GetAttackSignal()
-        return Events.GetEventSignal("Attack");
-    end
+]=]
+function init.GetAttackSignal()
+	return Events.GetEventSignal("Attack")
+end
 
-    --[=[
+--[=[
         @within Main
 
         Gets Ability Event Signal
-    ]=]
-    function init.GetAbilitySignal()
-        return Events.GetEventSignal("Ability");
-    end
+]=]
+function init.GetAbilitySignal()
+	return Events.GetEventSignal("Ability")
+end
 
 --[=[
     @within Main
 
     Used to fire an Event
 ]=]
-function init.Fire(Name:string, ...:any)
-    return Events.FireSignal(Name, ...);
+function init.Fire(Name: string, ...: any)
+	return Events.FireSignal(Name, ...)
 end
-
 
 --[=[
     @within Main
@@ -221,7 +236,7 @@ end
     Gets Events Module
 ]=]
 function init.GetEventMod(): {}
-    return Events;
+	return Events
 end
 
 --[=[
@@ -229,81 +244,80 @@ end
 
         Gets Module Settings
 ]=]
-    function init.GetModSettings(): {}
-        return require(init.__root.ModSettings);
-    end
+function init.GetModSettings(): {}
+	return require(init.__root.ModSettings)
+end
 
-    --[=[
+--[=[
         @within Main
 
         Gets Utility Module
 ]=]
-    function init.GetUtilMod(): {}
-        return require(init.__root.Util);
-    end
+function init.GetUtilMod(): {}
+	return require(init.__root.Util)
+end
 
-    --[=[
+--[=[
         @within Main
 
         Gets Animation Module
-    ]=]
-    function init.GetAnimMod(): {}
-        return AnimMod;
-    end
+]=]
+function init.GetAnimMod(): {}
+	return AnimMod
+end
 
 --[[
     System Setup
 --]]
-do 
-    if (RS:IsServer()) then
-        local eventFolder = Instance.new("Folder");
-        eventFolder.Name = "Events";
-        eventFolder.Parent = init.__root;
-        
-        local AbilityEvent = Instance.new("RemoteEvent");
-        AbilityEvent.Name = "Ability";
-        AbilityEvent.Parent = eventFolder;
+do
+	if RS:IsServer() then
+		local eventFolder = Instance.new("Folder")
+		eventFolder.Name = "Events"
+		eventFolder.Parent = init.__root
 
-        local AttackEvent = Instance.new("RemoteEvent");
-        AttackEvent.Name = "Attack";
-        AttackEvent.Parent = eventFolder;
+		local AbilityEvent = Instance.new("RemoteEvent")
+		AbilityEvent.Name = "Ability"
+		AbilityEvent.Parent = eventFolder
 
-        local AttackFuncEvent = Instance.new("RemoteFunction");
-        AttackFuncEvent.Name = "AttackFunc";
-        AttackFuncEvent.Parent = eventFolder;
+		local AttackEvent = Instance.new("RemoteEvent")
+		AttackEvent.Name = "Attack"
+		AttackEvent.Parent = eventFolder
 
-        local BlockEvent = Instance.new("RemoteEvent");
-        BlockEvent.Name = "Block";
-        BlockEvent.Parent = eventFolder;
+		local AttackFuncEvent = Instance.new("RemoteFunction")
+		AttackFuncEvent.Name = "AttackFunc"
+		AttackFuncEvent.Parent = eventFolder
 
-        local StandEvent = Instance.new("RemoteEvent");
-        StandEvent.Name = "StandInit";
-        StandEvent.Parent = eventFolder;
+		local BlockEvent = Instance.new("RemoteEvent")
+		BlockEvent.Name = "Block"
+		BlockEvent.Parent = eventFolder
 
-        local KnockbackEvent = Instance.new("RemoteEvent");
-        KnockbackEvent.Name = "Knockback";
-        KnockbackEvent.Parent = eventFolder;
+		local StandEvent = Instance.new("RemoteEvent")
+		StandEvent.Name = "StandInit"
+		StandEvent.Parent = eventFolder
 
-        task.delay(0, cloneServerScripts);
+		local KnockbackEvent = Instance.new("RemoteEvent")
+		KnockbackEvent.Name = "Knockback"
+		KnockbackEvent.Parent = eventFolder
 
-        Events.RegisterEvent("Finisher");
-        Events.RegisterEvent("FinisherFinale");
-    elseif (RS:IsClient()) then
-        init.Data = {
-            LastAttack = 0,
-            AttackAnimCount = 1,
-            Attacking = false,
-            Blocking = false,
-            DamageDealt = 0
-        }
+		task.delay(0, cloneServerScripts)
 
-        task.delay(0, clonePlayerScripts);
-        Events.RegisterEvent("Knockback");
-    end
-    Events.RegisterEvent("Block");
-    Events.RegisterEvent("Attack");
-    Events.RegisterEvent("Ability");
+		Events.RegisterEvent("Finisher")
+		Events.RegisterEvent("FinisherFinale")
+	elseif RS:IsClient() then
+		init.Data = {
+			LastAttack = 0,
+			AttackAnimCount = 1,
+			Attacking = false,
+			Blocking = false,
+			DamageDealt = 0,
+		}
 
+		task.delay(0, clonePlayerScripts)
+		Events.RegisterEvent("Knockback")
+	end
+	Events.RegisterEvent("Block")
+	Events.RegisterEvent("Attack")
+	Events.RegisterEvent("Ability")
 end
 
-return init;
+return init

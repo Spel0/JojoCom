@@ -71,7 +71,7 @@ end
 
     Use Stand Ability if it Exists and Cooldown isn't in Effect with Unlimited Additional Checks as an Optional Parameters
 ]=]
-function stand:UseAbility(Name:string, ...)
+function stand:UseAbility(Name:string, ...:boolean)
     if table.find({...}, true) then return; end
     if self.Abilities and self.Abilities[Name] then
         if not self.Abilities[Name].Cooldown or (self.Abilities[Name].Cooldown and os.clock() - (self.Abilities[Name].LastUsed or 0) > self.Abilities[Name].Cooldown) then
@@ -91,7 +91,7 @@ end
 
     Get Stand Idle Status
 ]=]
-function stand:GetIdle()
+function stand:GetIdle(): boolean
     return self.__idle;
 end
 --[=[ 
@@ -110,7 +110,7 @@ end
 
     Get Stand Anim Module
 ]=]
-function stand:GetAnimMod()
+function stand:GetAnimMod(): {}
     return self.__animmod;
 end
 
@@ -118,15 +118,15 @@ end
     @within Stand
     @client
 ]=]
-function stand:PlayAnim(Name:string)
+function stand:PlayAnim(Name:string): AnimationTrack?
     return self.__animmod:PlayAnim(Name);
 end
 
 --[=[
-    @Within Stand
+    @within Stand
     @client
 ]=]
-function stand:StopAnim(Name:string)
+function stand:StopAnim(Name:string): boolean
     return self.__animmod:StopAnim(Name);
 end
 
@@ -136,8 +136,24 @@ end
 
     Gets Stand Model in the World
 ]=]
-function stand:GetModel()
+function stand:GetModel(): Model
     return self.__stand;
+end
+
+--[=[
+    @within Stand
+    @client
+
+    Sets Stand Model Invisible
+]=]
+function stand:SetInvisible(active:boolean)
+    for _,v in self.__stand:GetDescendants() do
+        if v:IsA("BasePart") then
+            v.Transparency = active and 1 or 0;
+        elseif v:IsA("ParticleEmitter") then
+            v.Enabled = active;
+        end
+    end
 end
 
 --[=[

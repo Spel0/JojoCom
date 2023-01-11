@@ -53,5 +53,17 @@ return {
 			BindKey = Enum.KeyCode.R
 		}
 	},
-	Finisher = "Road Roller", --Or {"Road Roller", "Something Else"}
+	Finisher = {
+		{
+			Name = "RoadRoller",
+			Player2Offset = Vector3.new(0, 0, -3.5429999999999993),
+			Player1Anim = 12119848147,
+			Player2Anim = 12119850722,
+			Player1Items = {
+				game.ReplicatedStorage.Models.JojoRoller.jojoroller
+			},
+			Player2Items = {},
+			Duration = 7.067
+		}
+	}, 
 }

@@ -30,6 +30,7 @@ AttackEvent:Connect(function(owner, target, damage, blocking)
 end)
 
 local Abilities = {
+
     ["Heavy Punch"] = function(plr, Ability, args)
         local StandData = require(StandFolder:FindFirstChild(args[1]).StandData);
         local Abil = StandData.Abilities[Ability];
@@ -59,6 +60,7 @@ local Abilities = {
             args[2].PrimaryPart:ApplyImpulse(dir*args[2].PrimaryPart.AssemblyMass*Abil.KnockbackPower);
         end
     end,
+
     ["Rage"] = function(plr, Ability, args)
         local PlayerData = Data.getPlayerData(plr);
         local AbilData = PlayerData.Stand.Abilities[Ability]
@@ -73,6 +75,7 @@ local Abilities = {
             AbilData.Active = false;
         end
     end,
+
     ["Time Stop"] = function(plr, Ability, args)
         local PlayerData = Data.getPlayerData(plr);
         local AbilData = PlayerData.Stand.Abilities[Ability]
@@ -99,6 +102,7 @@ local Abilities = {
             end
         end
     end,
+    
     Barrage = function(plr, Ability, args)
         local StandData = require(StandFolder:FindFirstChild(args[1]).StandData);
         local PlayerData = Data.getPlayerData(plr);

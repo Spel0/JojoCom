@@ -7,6 +7,7 @@ local CombatMod = require(RSRootFolder.JojoCombatMod);
 local ModSettings = require(RSRootFolder.ModSettings);
 local Data = require(RSRootFolder.Data);
 local Events = require(RSRootFolder.EventsHandler);
+local StandsFolder = RSRootFolder.Stands;
 
 local function initializePlayer(plr)
     local PlayerData = Data.getPlayerData(plr);
@@ -23,6 +24,24 @@ local function initializePlayer(plr)
         PlayerData.Character = char;
         PlayerData.IsDead = false;
         char.Humanoid.BreakJointsOnDeath = false;
+        if not char:IsDescendantOf(workspace) then
+            char.AncestryChanged:Wait();
+        end
+        local finisherAnims = {};
+        for _,stand in StandsFolder:GetChildren() do
+            local data = require(stand:FindFirstChildOfClass("ModuleScript"));
+            for _,finisher in data.Finisher do
+                table.insert(finisherAnims, {
+                    Name = string.format("%s_Player1", finisher.Name),
+                    ID = finisher.Player1Anim
+                })
+                table.insert(finisherAnims, {
+                    Name = string.format("%s_Player2", finisher.Name),
+                    ID = finisher.Player2Anim
+                })
+            end
+        end
+        PlayerData.AnimMod = CombatMod.GetAnimMod().new(Animator, finisherAnims);
 
         char.Humanoid.Died:Connect(function()
             char.HumanoidRootPart.Anchored = true;
@@ -59,20 +78,24 @@ local function initializePlayer(plr)
         Proxy.Triggered:Connect(function(trigger)
             local target = game.Players:FindFirstChild(Proxy:GetAttribute("Owner"));
             local triggerData, targetData = Data.getPlayerData(trigger), Data.getPlayerData(target);
-            local Finisher = typeof(triggerData.Stand.Finisher) == "string" and triggerData.Stand.Finisher 
-                or typeof(triggerData.Stand.Finisher) == "table" and triggerData.Stand.Finisher[math.random(1, #triggerData.Stand.Finisher)];
-            local params = RaycastParams.new(); params.IgnoreWater = true;
-            local res = workspace:Raycast(trigger.Character.Head.Position, CFrame.new(trigger.Character.Head.Position, target.Character.Head.Position).LookVector * (trigger.Character.Head.Position - target.Character.Head.Position).magnitude, params);
+            local Finisher = triggerData.Stand.Finisher[math.random(1, #triggerData.Stand.Finisher)];
+            local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {trigger.Character, target.Character};
+            local res = workspace:Raycast(trigger.Character.Head.Position, (target.Character.Head.Position - trigger.Character.Head.Position).Unit * (trigger.Character.Head.Position - target.Character.Head.Position).Magnitude, params);
             if res then return; end
             Events.FireEvent("Finisher", trigger, target, Finisher);
             Proxy:Destroy();
             CombatMod.MakePlayerInvincible(trigger, true);
             CombatMod.MakePlayerInvincible(target, true);
             target:SetAttribute("SpecialDeath", true);
+            triggerData.InSpecialAnim = true;
+            targetData.InSpecialAnim = true;
             Events.GetEventSignal("FinisherFinale"):Wait();
             CombatMod.MakePlayerInvincible(target, false);
             CombatMod.MakePlayerInvincible(trigger, false);
-            target.Character.Humanoid.Health = 0;
+            triggerData.InSpecialAnim = false;
+            targetData.InSpecialAnim = false;
+            target.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead);
+            target.Character.Humanoid.Health = -math.huge
             target.CharacterRemoving:Wait();
             target:SetAttribute("SpecialDeath", false);
         end)

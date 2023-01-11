@@ -24,6 +24,7 @@ local Abilities = {
         end, true);
         return duration;
     end,
+
     ["Rage"] = function(Stand, StandData)
         if not StandData.Abilities.Rage then return; end
         if JojoCombat.Data.DamageDealt >= StandData.Abilities.Rage.NeedDamage then
@@ -33,6 +34,7 @@ local Abilities = {
             EventsFolder:FindFirstChild("Ability"):FireServer("Rage")
         end
     end,
+
     ["Teleport"] = function(Stand, StandData)
         local Player = game.Players.LocalPlayer;
         if not StandData.Abilities.Teleport then return; end
@@ -49,12 +51,14 @@ local Abilities = {
             _G.CharAnim:PlayAnim("TeleportAbil");
         end
     end,
+
     ["Time Stop"] = function(Stand, StandData)
         if not StandData.Abilities["Time Stop"] then return; end
         _G.CharAnim:PlayAnim("Time Stop");
         JojoCombat.Stand:PlayAnim("Time Stop");
         EventsFolder:FindFirstChild("Ability"):FireServer("Time Stop", Stand);
     end,
+    
     ["Barrage"] = function(Stand, StandData)
         if not StandData.Abilities.Barrage then return; end
         local Character = Player.Character;

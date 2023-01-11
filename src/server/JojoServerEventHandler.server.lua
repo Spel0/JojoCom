@@ -1,3 +1,6 @@
+local Debris = game:GetService("Debris")
+local PS = game:GetService"PhysicsService";
+local RunService = game:GetService"RunService";
 local RS = game:GetService"ReplicatedStorage";
 local RSRootFolder = RS:WaitForChild"JojoCombatScripts";
 local StandsFolder = RSRootFolder.Stands;
@@ -15,6 +18,7 @@ EventsFolder.AttackFunc.OnServerInvoke = function(plr, target:Model, withStand:b
     local targetData;
     if targetPlayer then
         targetData = Data.getPlayerData(targetPlayer);
+        if targetData.InSpecialAnim or targetData.Invincible then return; end
     end
     if not PlayerData.IsDead and os.clock() - PlayerData.LastAttack > ModSettings.AttackCooldown then
         local params = RaycastParams.new(); params.IgnoreWater = true; params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {plr.Character, target};
@@ -63,6 +67,14 @@ EventsFolder.Ability.OnServerEvent:Connect(function(plr, Ability:string, ...)
     if not PlayerData.IsDead and stand ~= nil and PlayerData.Stand.Model ~= nil then
         local abil = PlayerData.Stand.Abilities[Ability];
         if abil ~= nil and (abil.Cooldown == nil or os.clock() - (abil.LastUsed or 0) > abil.Cooldown) then
+            if abil.Type == "Damage" then
+                local args = {...};
+                if typeof(args[2]) == "Instance" and args[2]:IsA("Player") then
+                    local targetPlayer = game.Players:GetPlayerFromCharacter(args[2]);
+                    local targetPlayer = Data.getPlayerData(targetPlayer);
+                    if targetPlayer.InSpecialAnim or targetPlayer.Invincible then return; end
+                end
+            end
             EventsHandler.FireEvent("Ability", plr, Ability, ...);
             if not abilTaskTable[abil] or coroutine.status(abilTaskTable[abil]) == "dead" then
                 abilTaskTable[abil] = coroutine.create(function() 
@@ -76,4 +88,78 @@ end)
 
 CombatMod.GetBlockSignal():Connect(function(plr)
     EventsFolder:FindFirstChild("Block"):FireClient(plr);
+end)
+
+local function AddAnimItem(item, character, duration)
+    item.Parent = character;
+    local Motor = Instance.new("Motor6D");
+    if item:IsA("Model") then
+        --item.PrimaryPart.Position = character.HumanoidRootPart.Position;
+        Motor.Part1 = item.PrimaryPart;
+    else
+        --item.Position = character.HumanoidRootPart.Position;
+        Motor.Part1 = item;
+    end
+    Motor.Part0 = character.HumanoidRootPart;
+    Motor.Parent = character.HumanoidRootPart;
+    task.delay(duration, function()
+        Motor.Part0 = nil;
+        Motor.Part1 = nil;
+        Motor:Destroy();
+        item:Destroy();
+    end)
+end
+
+CombatMod.GetFinisherSignal():Connect(function(trigger, target, finisher)
+    for _,v in trigger.Character:GetDescendants() do
+        if v:IsA("BasePart") then
+            local old = v.CanCollide;
+            v.CanCollide = false;
+            local con; con = RunService.Stepped:Connect(function()
+                v.CanCollide = false;
+            end)
+            task.delay(finisher.Duration, function()
+                v.CanCollide = old;
+                con:Disconnect();
+            end)
+        end
+    end
+    for _,v in target.Character:GetDescendants() do
+        if v:IsA("BasePart") then
+            local old = v.CanCollide;
+            v.CanCollide = false;
+            local con; con = RunService.Stepped:Connect(function()
+                v.CanCollide = false;
+            end)
+            task.delay(finisher.Duration, function()
+                v.CanCollide = old;
+                con:Disconnect();
+            end)
+        end
+    end
+    trigger.DevComputerMovementMode = Enum.DevComputerMovementMode.Scriptable;
+    trigger.DevTouchMovementMode = Enum.DevTouchMovementMode.Scriptable;
+    target.DevComputerMovementMode = Enum.DevComputerMovementMode.Scriptable;
+    target.DevTouchMovementMode = Enum.DevTouchMovementMode.Scriptable;
+    for _,item in finisher.Player1Items do
+        AddAnimItem(item:Clone(), trigger.Character, finisher.Duration);
+    end
+    for _,item in finisher.Player2Items do
+        AddAnimItem(item:Clone(), target.Character, finisher.Duration);
+    end
+    target.Character.HumanoidRootPart.CFrame = trigger.Character.HumanoidRootPart.CFrame * CFrame.new((finisher.Player2Offset or Vector3.new()));
+    local triggerData, targetData = Data.getPlayerData(trigger), Data.getPlayerData(target);
+    local player1Anim, player2Anim = string.format("%s_Player1", finisher.Name), string.format("%s_Player2", finisher.Name);
+
+    triggerData.AnimMod:PlayAnim(player1Anim);
+    local track = targetData.AnimMod:PlayAnim(player2Anim);
+    task.wait(finisher.Duration);
+    targetData.AnimMod:PlayAnim(player2Anim);
+    targetData.AnimMod:ChangeTimePos(player2Anim, track.Length-0.1);
+    targetData.AnimMod:ChangeSpeed(player2Anim, 0);
+    CombatMod.Fire("FinisherFinale");
+    trigger.DevComputerMovementMode = Enum.DevComputerMovementMode.UserChoice;
+    trigger.DevTouchMovementMode = Enum.DevTouchMovementMode.UserChoice;
+    target.DevComputerMovementMode = Enum.DevComputerMovementMode.UserChoice;
+    target.DevTouchMovementMode = Enum.DevTouchMovementMode.UserChoice;
 end)
