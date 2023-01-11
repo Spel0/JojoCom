@@ -102,7 +102,7 @@ local Abilities = {
             end
         end
     end,
-    
+
     Barrage = function(plr, Ability, args)
         local StandData = require(StandFolder:FindFirstChild(args[1]).StandData);
         local PlayerData = Data.getPlayerData(plr);
@@ -129,6 +129,7 @@ local Abilities = {
                 local cloneLeft = left:Clone();
                 cloneLeft.Name = string.format("Left Arm_%s", i);
                 cloneLeft.Parent = StandModel;
+                cloneLeft:SetNetworkOwner(plr);
                 local Motor = Instance.new("Motor6D");
                 Motor.Part0 = StandModel:FindFirstChild("Torso");
                 Motor.Part1 = cloneLeft;
@@ -140,6 +141,7 @@ local Abilities = {
                 local cloneRight = right:Clone();
                 cloneRight.Name = string.format("Right Arm_%s", i);
                 cloneRight.Parent = StandModel;
+                cloneRight:SetNetworkOwner(plr);
                 local Motor = Instance.new("Motor6D");
                 Motor.Part0 = StandModel:FindFirstChild("Torso");
                 Motor.Part1 = cloneRight;
