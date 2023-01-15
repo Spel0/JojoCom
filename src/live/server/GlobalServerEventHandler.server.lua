@@ -24,7 +24,7 @@ AttackEvent:Connect(function(owner, target, damage, blocking)
     if not hum or blocking then return; end
     hum:TakeDamage(damage);
     local Data = Data.getPlayerData(owner);
-    if Data.Stand and not Data.Stand.Abilities.Rage.Active then
+    if #Data.Stand.Abilities == 0 or (Data.Stand.Abilities.Rage == nil or not Data.Stand.Abilities.Rage.Active) then
         Data.DamageDealt += damage;
     end
 end)

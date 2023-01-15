@@ -10,6 +10,7 @@ local EventsFolder = RSRootFolder:WaitForChild("Events");
 local EventsHandler = require(RSRootFolder.EventsHandler)
 local StandMod = require(RSRootFolder.Stand);
 local HitboxMod = require(game.ReplicatedStorage.CustomModules.Hitbox);
+local CutCamMod = require(game.ReplicatedStorage.CustomModules.CutsceneCam);
 local UtilMod = JojoCombat.GetUtilMod();
 local activatedActions = {}
 
@@ -27,11 +28,30 @@ local Abilities = {
 
     ["Rage"] = function(Stand, StandData)
         if not StandData.Abilities.Rage then return; end
-        if JojoCombat.Data.DamageDealt >= StandData.Abilities.Rage.NeedDamage then
+        if JojoCombat.Data.DamageDealt >= StandData.Abilities.Rage.NeedDamage and not StandData.Abilities.Rage.Active then
             if _G.CharAnim then
+                local CamFold = game.ReplicatedStorage.CamRefs.Rage.Model:Clone();
+                CamFold.Parent = workspace;
+                CamFold.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) * CFrame.new(Vector3.new(-17.847705841064453, -2.4999959468841553, -15.081409454345703));
                 _G.CharAnim:PlayAnim("Rage");
+                JojoCombat.Data.Stunned = true;
+                local CutCam = CutCamMod.new(false, {
+                    Camera = workspace.CurrentCamera,
+                    ReferencePart = CamFold.Camera,
+                    ReferenceModel = CamFold,
+                    RefModelAnimID = 12162366683
+                });
+                Player.Character.HumanoidRootPart.Anchored = true;
+                local con; con = CutCam:Play().Stopped:Connect(function()
+                    CutCam:Destroy();
+                    CamFold:Destroy();
+                    Player.Character.HumanoidRootPart.Anchored = false;
+                    JojoCombat.Data.Stunned = false;
+                    con:Disconnect();
+                end)
             end
-            EventsFolder:FindFirstChild("Ability"):FireServer("Rage")
+            EventsFolder:FindFirstChild("Ability"):FireServer("Rage");
+            JojoCombat.Data.DamageDealt = 0;
         end
     end,
 
