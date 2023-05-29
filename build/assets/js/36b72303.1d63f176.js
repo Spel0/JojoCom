@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[299],{63891:s=>{s.exports=JSON.parse('{"sourceUrl":"https://github.com/Spel0/JojoCom/blob/master","baseUrl":"/JojoCom/","classOrder":[],"apiCategories":[]}')}}]);
